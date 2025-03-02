@@ -1,3 +1,4 @@
+
 "use client";
 import { useState } from "react";
 import { bookTanker } from "@/app/actions";
@@ -6,12 +7,12 @@ interface Taker {
   id: string;
   name: string;
   type: string;
-  status: string; // AVAILABLE or UNDER_MAINTENANCE
+  status: string; // AVAILABLE, UNDER_MAINTENANCE, or BOOKED
 }
 
 interface BookingFormProps {
   allTakers: Taker[];
-  selectedDate: Date; // Add selectedDate prop
+  selectedDate: Date;
 }
 
 export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
@@ -62,7 +63,8 @@ export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
               disabled={taker.status !== "AVAILABLE"} // Disable if taker is not available
             >
               {taker.name} ({taker.type})
-              {taker.status !== "AVAILABLE" && " (Under Maintenance)"}
+              {taker.status !== "AVAILABLE" &&
+                ` (${taker.status === "UNDER_MAINTENANCE" ? "Under Maintenance" : "Booked"})`}
             </option>
           ))}
         </select>
