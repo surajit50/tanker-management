@@ -147,8 +147,8 @@ export function Calendar() {
                   variant="outline"
                   className={`p-2 h-auto aspect-square ${
                     isAvailable
-                      ? "bg-green-100 hover:bg-green-200 text-green-900" // Green for available dates
-                      : "bg-red-100 hover:bg-red-200 text-red-900" // Red for unavailable dates
+                      ? "bg-green-100 hover:bg-green-200 text-green-900"
+                      : "bg-red-100 hover:bg-red-200 text-red-900"
                   } ${
                     isToday ? "ring-2 ring-primary" : ""
                   } transition-colors duration-200`}
