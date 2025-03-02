@@ -1,3 +1,4 @@
+
 "use client";
 
 import type React from "react";
@@ -15,6 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Taker {
   id: string;
@@ -93,9 +95,17 @@ export function BookingForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <motion.form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="space-y-2">
-        <Label htmlFor="takerId">Select Taker</Label>
+        <Label htmlFor="takerId" className="text-lg font-semibold">
+          Select Taker
+        </Label>
         <Select
           name="takerId"
           required
@@ -103,12 +113,16 @@ export function BookingForm({
           value={selectedTakerId}
           onValueChange={setSelectedTakerId}
         >
-          <SelectTrigger id="takerId">
+          <SelectTrigger id="takerId" className="w-full py-3">
             <SelectValue placeholder="Choose a taker" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white shadow-lg rounded-lg">
             {availableTakers.map((taker) => (
-              <SelectItem key={taker.id} value={taker.id}>
+              <SelectItem
+                key={taker.id}
+                value={taker.id}
+                className="hover:bg-gray-100 cursor-pointer"
+              >
                 {taker.name} ({taker.type})
               </SelectItem>
             ))}
@@ -116,24 +130,40 @@ export function BookingForm({
         </Select>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Alert variant="destructive" className="border-red-500">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
 
-      {success && (
-        <Alert>
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>Booking successful!</AlertDescription>
-        </Alert>
-      )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Alert className="border-green-500">
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>Booking successful!</AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Button
         type="submit"
         disabled={loading || !selectedTakerId}
-        className="w-full"
+        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300"
       >
         {loading ? (
           <>
@@ -144,6 +174,6 @@ export function BookingForm({
           "Book Now"
         )}
       </Button>
-    </form>
+    </motion.form>
   );
 }
