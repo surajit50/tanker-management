@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -32,7 +31,18 @@ export function UpcomingDeliveries() {
         }
 
         const data = await response.json();
-        setUpcomingDeliveries(data);
+
+        // Filter deliveries within the next 7 days
+        const today = new Date();
+        const sevenDaysLater = new Date(today);
+        sevenDaysLater.setDate(today.getDate() + 7);
+
+        const filteredDeliveries = data.filter((delivery: Booking) => {
+          const deliveryDate = new Date(delivery.date);
+          return deliveryDate >= today && deliveryDate <= sevenDaysLater;
+        });
+
+        setUpcomingDeliveries(filteredDeliveries);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to fetch upcoming deliveries"
@@ -78,7 +88,7 @@ export function UpcomingDeliveries() {
     return (
       <div className="text-center text-gray-600">
         <CalendarIcon className="mx-auto h-8 w-8 mb-2" />
-        No upcoming deliveries.
+        No upcoming deliveries within the next 7 days.
       </div>
     );
   }
@@ -88,7 +98,7 @@ export function UpcomingDeliveries() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserIcon className="h-6 w-6" />
-          Upcoming Deliveries
+          Upcoming Deliveries (Next 7 Days)
         </CardTitle>
       </CardHeader>
       <CardContent>
