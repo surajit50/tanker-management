@@ -1,5 +1,5 @@
-import { UpcomingDeliveries } from "@/components/UpcomingDeliveries";
-
+import { UpcomingDeliveries } from "@/1components/upcomingDeliveries ";
+//components/upcomingDecomponents/upcomingDeliveries.tsxliveries.tsx
 export default function DeliveriesPage() {
   return (
     <div className="max-w-4xl mx-auto p-4">
