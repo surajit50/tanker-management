@@ -12,10 +12,11 @@ interface Taker {
 }
 
 interface BookingFormProps {
-  allTakers: Taker[]; // Pass all takers (both available and unavailable)
+  allTakers: Taker[];
+  selectedDate: Date; // Add selectedDate prop
 }
 
-export function BookingForm({ allTakers }: BookingFormProps) {
+export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,14 +28,7 @@ export function BookingForm({ allTakers }: BookingFormProps) {
     setLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    const date = new Date(formData.get("date") as string);
-
-    // Validate date
-    if (date < new Date()) {
-      setError("Please select a future date.");
-      setLoading(false);
-      return;
-    }
+    formData.append("date", selectedDate.toISOString()); // Add selectedDate to form data
 
     try {
       await bookTanker(formData);
@@ -48,74 +42,53 @@ export function BookingForm({ allTakers }: BookingFormProps) {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Book Taker</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label
-            htmlFor="takerId"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Select Taker
-          </label>
-          <select
-            name="takerId"
-            id="takerId"
-            required
-            disabled={loading}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
-          >
-            {allTakers.map((taker) => (
-              <option
-                key={taker.id}
-                value={taker.id}
-                disabled={taker.status !== "AVAILABLE"} // Disable if taker is not available
-              >
-                {taker.name} ({taker.type})
-                {taker.status !== "AVAILABLE" && " (Under Maintenance)"}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="date"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Select Date
-          </label>
-          <input
-            type="date"
-            name="date"
-            id="date"
-            required
-            min={formatISTDate(new Date())}
-            disabled={loading}
-            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
-          />
-        </div>
-
-        {error && (
-          <div className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="text-green-600 bg-green-50 p-3 rounded-lg text-sm">
-            Booking successful!
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+    <div className="space-y-6">
+      <div>
+        <label
+          htmlFor="takerId"
+          className="block text-sm font-medium text-gray-700 mb-2"
         >
-          {loading ? "Booking..." : "Book Now"}
-        </button>
-      </form>
+          Select Taker
+        </label>
+        <select
+          name="takerId"
+          id="takerId"
+          required
+          disabled={loading}
+          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
+        >
+          {allTakers.map((taker) => (
+            <option
+              key={taker.id}
+              value={taker.id}
+              disabled={taker.status !== "AVAILABLE"} // Disable if taker is not available
+            >
+              {taker.name} ({taker.type})
+              {taker.status !== "AVAILABLE" && " (Under Maintenance)"}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {error && (
+        <div className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="text-green-600 bg-green-50 p-3 rounded-lg text-sm">
+          Booking successful!
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+      >
+        {loading ? "Booking..." : "Book Now"}
+      </button>
     </div>
   );
 }
