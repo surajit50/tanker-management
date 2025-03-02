@@ -30,7 +30,7 @@ export async function bookTanker(formData: FormData) {
     },
   });
 
-  revalidatePath("/booking"); // Revalidate the booking page to reflect changes
+  revalidatePath("/"); // Revalidate the booking page to reflect changes
 }
 
 // New action: Mark taker for maintenance

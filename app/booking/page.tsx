@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
+import { useRouter } from "next/navigation";
 
 interface Taker {
   id: string;
@@ -24,7 +25,7 @@ export default function BookingPage() {
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter();
   // Fetch available takers for the selected date
   useEffect(() => {
     const fetchAvailableTakers = async () => {
@@ -111,6 +112,7 @@ export default function BookingPage() {
             <BookingForm
               allTakers={availableTakers}
               selectedDate={selectedDate}
+              onBookingSuccess={() => router.refresh()}
             />
           )}
         </CardContent>
