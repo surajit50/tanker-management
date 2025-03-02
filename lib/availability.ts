@@ -1,5 +1,5 @@
 import prisma from "./prisma";
-
+import { Taker, Booking } from "@prisma/client";
 interface DateAvailability {
   [date: string]: boolean;
 }
@@ -31,7 +31,7 @@ export async function getDateAvailability(
     const dateKey = currentDate.toISOString().split("T")[0];
 
     const availableTakers = takers.filter(
-      (taker) =>
+      (taker:Taker) =>
         taker.status === "AVAILABLE" &&
         !bookings.some(
           (booking) =>
