@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter
 import { formatISTDate, parseISTDate } from "@/lib/dateUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 export function Calendar() {
+  const router = useRouter(); // Initialize useRouter
   const [currentDate, setCurrentDate] = useState(
     parseISTDate(new Date().toISOString())
   );
@@ -63,8 +66,8 @@ export function Calendar() {
   const handleDateClick = (date: Date) => {
     const dateKey = formatISTDate(date);
     if (availability[dateKey]) {
-      alert(`You clicked on ${date.toLocaleDateString()}`);
-      // You can replace this with a function to open a booking form
+      // Redirect to the booking page with the selected date
+      router.push(`/booking?date=${dateKey}`);
     }
   };
 
