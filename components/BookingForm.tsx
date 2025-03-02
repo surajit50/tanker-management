@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Taker {
   id: string;
@@ -32,7 +33,7 @@ export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const route = useRouter();
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -49,6 +50,7 @@ export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to book taker");
     } finally {
+      route.refresh();
       setLoading(false);
     }
   };
