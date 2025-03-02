@@ -60,20 +60,7 @@ export default function BookingPage() {
 
       <div className="bg-white shadow rounded-lg p-4">
         <div className="mb-6">
-          <label
-            htmlFor="date"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Select Date
-          </label>
-          <input
-            type="date"
-            id="date"
-            value={formatISTDate(selectedDate)}
-            min={formatISTDate(new Date())}
-            onChange={(e) => setSelectedDate(parseISTDate(e.target.value))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition duration-200"
-          />
+
         </div>
 
         {loading ? (
