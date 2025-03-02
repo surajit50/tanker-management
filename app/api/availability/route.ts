@@ -1,8 +1,7 @@
-
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { parseISTDate, formatISTDate } from "@/lib/dateUtils";
-import { Taker } from "@prisma/client"; // Add this import
+import { Taker, Booking } from "@prisma/client"; // Import Prisma-generated types
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -20,6 +19,7 @@ export async function GET(request: Request) {
     const startDate = parseISTDate(`${year}-${month}-01`);
     const endDate = parseISTDate(`${year}-${month + 1}-01`);
 
+    // Fetch all bookings for the selected month
     const bookings = await prisma.booking.findMany({
       where: {
         date: {
@@ -32,8 +32,10 @@ export async function GET(request: Request) {
       },
     });
 
+    // Fetch all takers
     const takers = await prisma.taker.findMany();
 
+    // Create availability map
     const availability: Record<string, boolean> = {};
     const daysInMonth = new Date(year, month, 0).getDate();
 
@@ -41,15 +43,16 @@ export async function GET(request: Request) {
       const currentDate = parseISTDate(`${year}-${month}-${day}`);
       const dateKey = formatISTDate(currentDate);
 
-      // Add type annotation to the taker parameter
+      // Check if any available takers exist for this date
       const availableTakers = takers.filter((taker: Taker) => {
         return (
           taker.status === "AVAILABLE" &&
-          !bookings.some(
-            (booking) =>
+          !bookings.some((booking: Booking & { taker: Taker }) => {
+            return (
               booking.takerId === taker.id &&
               formatISTDate(booking.date) === dateKey
-          )
+            );
+          })
         );
       });
 
