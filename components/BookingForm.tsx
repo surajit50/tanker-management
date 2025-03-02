@@ -16,7 +16,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface Taker {
   id: string;
@@ -95,13 +94,7 @@ export function BookingForm({
   );
 
   return (
-    <motion.form
-      onSubmit={handleSubmit}
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="takerId" className="text-lg font-semibold">
           Select Taker
@@ -130,35 +123,19 @@ export function BookingForm({
         </Select>
       </div>
 
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Alert variant="destructive" className="border-red-500">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
+      {error && (
+        <Alert variant="destructive" className="border-red-500">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Alert className="border-green-500">
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>Booking successful!</AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {success && (
+        <Alert className="border-green-500">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>Booking successful!</AlertDescription>
+        </Alert>
+      )}
 
       <Button
         type="submit"
@@ -174,6 +151,6 @@ export function BookingForm({
           "Book Now"
         )}
       </Button>
-    </motion.form>
+    </form>
   );
 }
