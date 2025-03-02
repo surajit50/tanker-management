@@ -1,4 +1,3 @@
-
 "use client";
 
 import type React from "react";
@@ -38,6 +37,7 @@ export function BookingForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0); // Progress state
   const [selectedTakerId, setSelectedTakerId] = useState<string>("");
   const [localTakers, setLocalTakers] = useState<Taker[]>(allTakers);
   const router = useRouter();
@@ -64,12 +64,19 @@ export function BookingForm({
     setError(null);
     setSuccess(false);
     setLoading(true);
+    setProgress(0); // Reset progress
 
     const formData = new FormData(event.currentTarget);
     formData.append("date", selectedDate.toISOString());
 
     try {
+      // Simulate progress (for demonstration purposes)
+      const interval = setInterval(() => {
+        setProgress((prev) => (prev < 90 ? prev + 10 : prev)); // Increment progress
+      }, 300);
+
       await bookTanker(formData);
+      setProgress(100); // Complete progress
       setSuccess(true);
       setSelectedTakerId("");
 
@@ -82,8 +89,10 @@ export function BookingForm({
 
       // Refresh data from server
       refreshData();
+      clearInterval(interval); // Stop the progress interval
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to book taker");
+      setProgress(0); // Reset progress on error
     } finally {
       setLoading(false);
     }
@@ -140,16 +149,22 @@ export function BookingForm({
       <Button
         type="submit"
         disabled={loading || !selectedTakerId}
-        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300"
+        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300 relative overflow-hidden"
       >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Booking...
-          </>
-        ) : (
-          "Book Now"
-        )}
+        <div
+          className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
+          style={{ width: `${progress}%` }} // Progress bar
+        />
+        <span className="relative z-10 flex items-center justify-center">
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Booking... ({progress}%)
+            </>
+          ) : (
+            "Book Now"
+          )}
+        </span>
       </Button>
     </form>
   );
