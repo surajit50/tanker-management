@@ -105,7 +105,7 @@ export function UpcomingDeliveries() {
 
   if (upcomingDeliveries.length === 0) {
     return (
-      <div className="text-center text-gray-600">
+      <div className="text-center text-gray-600 py-8">
         <CalendarIcon className="mx-auto h-8 w-8 mb-2" />
         No upcoming deliveries.
       </div>
@@ -113,10 +113,10 @@ export function UpcomingDeliveries() {
   }
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserIcon className="h-6 w-6" />
+        <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+          <UserIcon className="h-6 w-6 text-primary" />
           Upcoming Deliveries
         </CardTitle>
       </CardHeader>
@@ -124,32 +124,35 @@ export function UpcomingDeliveries() {
         {/* Today's Deliveries */}
         {today.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold mb-4">Today</h3>
-            <ul className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full">
+                Today
+              </span>
+            </h3>
+            <ul className="space-y-3">
               {today.map((delivery) => (
                 <li key={delivery.id}>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">
-                            {delivery.taker.name} ({delivery.taker.type})
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Scheduled for: {new Date(delivery.date).toLocaleString()}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            // Handle delivery actions (e.g., mark as completed)
-                          }}
-                          className="gap-2"
-                        >
-                          <CheckCircleIcon className="h-4 w-4" />
-                          Mark as Completed
-                        </Button>
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {delivery.taker.name} ({delivery.taker.type})
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Scheduled for: {new Date(delivery.date).toLocaleString()}
+                        </p>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => {
+                          // Handle delivery actions (e.g., mark as completed)
+                        }}
+                      >
+                        <CheckCircleIcon className="h-4 w-4" />
+                        Mark as Completed
+                      </Button>
                     </CardContent>
                   </Card>
                 </li>
@@ -161,32 +164,35 @@ export function UpcomingDeliveries() {
         {/* Tomorrow's Deliveries */}
         {tomorrow.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold mb-4">Tomorrow</h3>
-            <ul className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                Tomorrow
+              </span>
+            </h3>
+            <ul className="space-y-3">
               {tomorrow.map((delivery) => (
                 <li key={delivery.id}>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">
-                            {delivery.taker.name} ({delivery.taker.type})
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Scheduled for: {new Date(delivery.date).toLocaleString()}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            // Handle delivery actions (e.g., mark as completed)
-                          }}
-                          className="gap-2"
-                        >
-                          <CheckCircleIcon className="h-4 w-4" />
-                          Mark as Completed
-                        </Button>
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {delivery.taker.name} ({delivery.taker.type})
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Scheduled for: {new Date(delivery.date).toLocaleString()}
+                        </p>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => {
+                          // Handle delivery actions (e.g., mark as completed)
+                        }}
+                      >
+                        <CheckCircleIcon className="h-4 w-4" />
+                        Mark as Completed
+                      </Button>
                     </CardContent>
                   </Card>
                 </li>
@@ -198,32 +204,35 @@ export function UpcomingDeliveries() {
         {/* Next 7 Days' Deliveries */}
         {next7Days.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold mb-4">Next 7 Days</h3>
-            <ul className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                Next 7 Days
+              </span>
+            </h3>
+            <ul className="space-y-3">
               {next7Days.map((delivery) => (
                 <li key={delivery.id}>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">
-                            {delivery.taker.name} ({delivery.taker.type})
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Scheduled for: {new Date(delivery.date).toLocaleString()}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            // Handle delivery actions (e.g., mark as completed)
-                          }}
-                          className="gap-2"
-                        >
-                          <CheckCircleIcon className="h-4 w-4" />
-                          Mark as Completed
-                        </Button>
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {delivery.taker.name} ({delivery.taker.type})
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Scheduled for: {new Date(delivery.date).toLocaleString()}
+                        </p>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => {
+                          // Handle delivery actions (e.g., mark as completed)
+                        }}
+                      >
+                        <CheckCircleIcon className="h-4 w-4" />
+                        Mark as Completed
+                      </Button>
                     </CardContent>
                   </Card>
                 </li>
