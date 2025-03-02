@@ -7,6 +7,7 @@ interface Taker {
   id: string;
   name: string;
   type: string;
+  status: string; // Add status field to match your Prisma model
 }
 
 export default function BookingPage() {
@@ -71,7 +72,7 @@ export default function BookingPage() {
             value={formatISTDate(selectedDate)}
             min={formatISTDate(new Date())}
             onChange={(e) => setSelectedDate(parseISTDate(e.target.value))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition duration-200"
           />
         </div>
 
