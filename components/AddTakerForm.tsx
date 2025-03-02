@@ -1,6 +1,22 @@
 "use client";
-import { addTaker } from "@/app/actions";
+
+import type React from "react";
+
 import { useState } from "react";
+import { addTaker } from "@/app/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, AlertCircle } from "lucide-react";
 
 export function AddTakerForm() {
   const [error, setError] = useState<string | null>(null);
@@ -22,60 +38,49 @@ export function AddTakerForm() {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 mb-6">
-      <h2 className="text-xl font-semibold mb-4">Add New Taker</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            id="name"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="type"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Type
-          </label>
-          <select
-            name="type"
-            id="type"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-          >
-            <option value="Dustbin">Dustbin Van</option>
-            <option value="Tanker">Water Tanker</option>
-          </select>
-        </div>
-
-        {error && (
-          <div className="text-red-600 bg-red-100 p-2 rounded">{error}</div>
-        )}
-
-        {success && (
-          <div className="text-green-600 bg-green-100 p-2 rounded">
-            Taker added successfully!
+    <Card>
+      <CardHeader>
+        <CardTitle>Add New Taker</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input type="text" id="name" name="name" required />
           </div>
-        )}
 
-        <button
-          type="submit"
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-        >
-          Add Taker
-        </button>
-      </form>
-    </div>
+          <div className="space-y-2">
+            <Label htmlFor="type">Type</Label>
+            <Select name="type" required>
+              <SelectTrigger id="type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Dustbin">Dustbin Van</SelectItem>
+                <SelectItem value="Tanker">Water Tanker</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>Taker added successfully!</AlertDescription>
+            </Alert>
+          )}
+
+          <Button type="submit" className="w-full">
+            Add Taker
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

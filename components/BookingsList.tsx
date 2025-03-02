@@ -1,5 +1,9 @@
 "use client";
+
 import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface Booking {
   id: string;
@@ -18,6 +22,9 @@ export function BookingsList() {
     const fetchBookings = async () => {
       try {
         const response = await fetch("/api/bookings");
+        if (!response.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
         const data = await response.json();
         setBookings(data);
       } catch (error) {
@@ -30,29 +37,40 @@ export function BookingsList() {
     fetchBookings();
   }, []);
 
-  if (loading) {
-    return <div>Loading bookings...</div>;
-  }
-
   return (
-    <div className="bg-white shadow rounded-lg p-4">
-      <h2 className="text-xl font-semibold mb-4">Bookings</h2>
-      <div className="space-y-2">
-        {bookings.length > 0 ? (
-          bookings.map((booking) => (
-            <div key={booking.id} className="border-b pb-2">
-              <div className="font-medium">
-                {booking.taker.name} ({booking.taker.type})
-              </div>
-              <div className="text-sm text-gray-600">
-                {new Date(booking.date).toLocaleDateString()}
-              </div>
-            </div>
-          ))
+    <Card>
+      <CardHeader>
+        <CardTitle>Bookings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center items-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
         ) : (
-          <div className="text-gray-600">No bookings found</div>
+          <div className="space-y-2">
+            {bookings.length > 0 ? (
+              bookings.map((booking, index) => (
+                <div key={booking.id}>
+                  <div className="py-2">
+                    <div className="font-medium">
+                      {booking.taker.name} ({booking.taker.type})
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(booking.date).toLocaleDateString()}
+                    </div>
+                  </div>
+                  {index < bookings.length - 1 && <Separator />}
+                </div>
+              ))
+            ) : (
+              <div className="text-muted-foreground py-2">
+                No bookings found
+              </div>
+            )}
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

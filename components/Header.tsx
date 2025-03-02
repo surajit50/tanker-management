@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 
 export function Header() {
   const pathname = usePathname();
@@ -14,12 +16,12 @@ export function Header() {
   ];
 
   return (
-    <header className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="border-b bg-background">
+      <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-xl font-bold text-blue-600">
+            <Link href="/" className="text-xl font-bold text-primary">
               Gram Panchayat
             </Link>
           </div>
@@ -30,10 +32,10 @@ export function Header() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium ${
+                className={`text-sm font-medium transition-colors hover:text-primary ${
                   pathname === link.href
-                    ? "text-blue-600"
-                    : "text-gray-500 hover:text-blue-600"
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 {link.name}
@@ -43,49 +45,35 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-500 hover:text-blue-600 focus:outline-none"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16m-7 6h7"
-                  />
-                )}
-              </svg>
-            </button>
+              {isMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <nav className="flex flex-col space-y-2 pb-4">
+          <div className="md:hidden pb-4">
+            <nav className="flex flex-col space-y-4">
               {navigationLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm font-medium ${
+                  className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${
                     pathname === link.href
-                      ? "text-blue-600"
-                      : "text-gray-500 hover:text-blue-600"
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                   }`}
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {link.name}
                 </Link>

@@ -1,5 +1,4 @@
 import { AddTakerForm } from "@/components/AddTakerForm";
-
 import { BookingsList } from "@/components/BookingsList";
 import { Calendar } from "@/components/Calendar";
 import { TakerManagement } from "@/components/TakerManagement";
@@ -21,7 +20,6 @@ export default function DashboardPage() {
           <Calendar />
           <BookingsList />
         </div>
-        <div></div>
       </div>
     </div>
   );

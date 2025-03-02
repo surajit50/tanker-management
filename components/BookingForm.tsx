@@ -1,7 +1,20 @@
-
 "use client";
+
+import type React from "react";
+
 import { useState } from "react";
 import { bookTanker } from "@/app/actions";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface Taker {
   id: string;
@@ -42,53 +55,56 @@ export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label
-          htmlFor="takerId"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Select Taker
-        </label>
-        <select
-          name="takerId"
-          id="takerId"
-          required
-          disabled={loading}
-          className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
-        >
-          {allTakers.map((taker) => (
-            <option
-              key={taker.id}
-              value={taker.id}
-              disabled={taker.status !== "AVAILABLE"} // Disable if taker is not available
-            >
-              {taker.name} ({taker.type})
-              {taker.status !== "AVAILABLE" &&
-                ` (${taker.status === "UNDER_MAINTENANCE" ? "Under Maintenance" : "Booked"})`}
-            </option>
-          ))}
-        </select>
+      <div className="space-y-2">
+        <Label htmlFor="takerId">Select Taker</Label>
+        <Select name="takerId" required disabled={loading}>
+          <SelectTrigger id="takerId">
+            <SelectValue placeholder="Choose a taker" />
+          </SelectTrigger>
+          <SelectContent>
+            {allTakers.map((taker) => (
+              <SelectItem
+                key={taker.id}
+                value={taker.id}
+                disabled={taker.status !== "AVAILABLE"}
+              >
+                {taker.name} ({taker.type})
+                {taker.status !== "AVAILABLE" &&
+                  ` (${
+                    taker.status === "UNDER_MAINTENANCE"
+                      ? "Under Maintenance"
+                      : "Booked"
+                  })`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {error && (
-        <div className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {success && (
-        <div className="text-green-600 bg-green-50 p-3 rounded-lg text-sm">
-          Booking successful!
-        </div>
+        <Alert>
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>Booking successful!</AlertDescription>
+        </Alert>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
-      >
-        {loading ? "Booking..." : "Book Now"}
-      </button>
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Booking...
+          </>
+        ) : (
+          "Book Now"
+        )}
+      </Button>
     </form>
   );
 }

@@ -1,5 +1,18 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 interface Taker {
   id: string;
@@ -10,12 +23,23 @@ interface Taker {
 
 export function TakerManagement() {
   const [takers, setTakers] = useState<Taker[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTakers = async () => {
-      const response = await fetch("/api/takers");
-      const data = await response.json();
-      setTakers(data);
+      setLoading(true);
+      try {
+        const response = await fetch("/api/takers");
+        if (!response.ok) {
+          throw new Error("Failed to fetch takers");
+        }
+        const data = await response.json();
+        setTakers(data);
+      } catch (error) {
+        console.error("Error fetching takers:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchTakers();
@@ -34,69 +58,81 @@ export function TakerManagement() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (response.ok) {
-        setTakers((prev) =>
-          prev.map((taker) =>
-            taker.id === takerId ? { ...taker, status: newStatus } : taker
-          )
-        );
+      if (!response.ok) {
+        throw new Error("Failed to update taker status");
       }
+
+      setTakers((prev) =>
+        prev.map((taker) =>
+          taker.id === takerId ? { ...taker, status: newStatus } : taker
+        )
+      );
     } catch (error) {
       console.error("Error updating taker status:", error);
     }
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4">
-      <h2 className="text-xl font-semibold mb-4">Manage Takers</h2>
-      <table className="w-full">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2 text-left">Type</th>
-            <th className="p-2 text-left">Status</th>
-            <th className="p-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {takers.map((taker) => (
-            <tr key={taker.id} className="border-b">
-              <td className="p-2">{taker.name}</td>
-              <td className="p-2">{taker.type}</td>
-              <td className="p-2">
-                <span
-                  className={`px-2 py-1 rounded text-sm ${
-                    taker.status === "AVAILABLE"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {taker.status}
-                </span>
-              </td>
-              <td className="p-2">
-                {taker.status === "AVAILABLE" ? (
-                  <button
-                    onClick={() =>
-                      handleStatusChange(taker.id, "UNDER_MAINTENANCE")
-                    }
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                  >
-                    Mark for Maintenance
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleStatusChange(taker.id, "AVAILABLE")}
-                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                  >
-                    Mark Available
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Manage Takers</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {takers.map((taker) => (
+                <TableRow key={taker.id}>
+                  <TableCell className="font-medium">{taker.name}</TableCell>
+                  <TableCell>{taker.type}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        taker.status === "AVAILABLE" ? "default" : "destructive"
+                      }
+                    >
+                      {taker.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {taker.status === "AVAILABLE" ? (
+                      <Button
+                        onClick={() =>
+                          handleStatusChange(taker.id, "UNDER_MAINTENANCE")
+                        }
+                        variant="destructive"
+                      >
+                        Mark for Maintenance
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() =>
+                          handleStatusChange(taker.id, "AVAILABLE")
+                        }
+                        variant="outline"
+                      >
+                        Mark Available
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
   );
 }
