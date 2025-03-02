@@ -34,7 +34,7 @@ export async function getDateAvailability(
       (taker:Taker) =>
         taker.status === "AVAILABLE" &&
         !bookings.some(
-          (booking) =>
+          (booking:Booking) =>
             booking.takerId === taker.id &&
             booking.date.toISOString().split("T")[0] === dateKey
         )
