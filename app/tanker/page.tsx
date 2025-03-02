@@ -1,5 +1,5 @@
-import { AddTakerForm } from "@/components/add-taker-form";
-import { TakerManagement } from "@/components/taker-management";
+import { AddTakerForm } from "@/components/AddTakerForm";
+import { TakerManagement } from "@/components/TakerManagement";
 
 export default function TakersPage() {
   return (
