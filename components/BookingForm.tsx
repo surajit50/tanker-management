@@ -1,8 +1,6 @@
-
 "use client";
 import { useState } from "react";
 import { bookTanker } from "@/app/actions";
-import { formatISTDate } from "@/lib/dateUtils";
 
 interface Taker {
   id: string;
@@ -42,7 +40,7 @@ export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label
           htmlFor="takerId"
@@ -89,6 +87,6 @@ export function BookingForm({ allTakers, selectedDate }: BookingFormProps) {
       >
         {loading ? "Booking..." : "Book Now"}
       </button>
-    </div>
+    </form>
   );
 }
