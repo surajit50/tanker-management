@@ -13,6 +13,8 @@ export function Header() {
     { name: "Home", href: "/" },
     { name: "Bookings", href: "/booking" },
     { name: "Manage Takers", href: "/tanker" },
+
+    {name:"Delivery" , href:"/upcomingDeliver"}
   ];
 
   return (
