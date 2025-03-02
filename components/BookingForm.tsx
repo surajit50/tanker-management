@@ -1,3 +1,4 @@
+
 "use client";
 import { useState } from "react";
 import { bookTanker } from "@/app/actions";
@@ -44,13 +45,13 @@ export function BookingForm({ availableTakers }: BookingFormProps) {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4">
-      <h2 className="text-xl font-semibold mb-4">Book Taker</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-white shadow-lg rounded-xl p-6 max-w-md mx-auto">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Book Taker</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
             htmlFor="takerId"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
             Select Taker
           </label>
@@ -59,7 +60,7 @@ export function BookingForm({ availableTakers }: BookingFormProps) {
             id="takerId"
             required
             disabled={loading}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100"
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
           >
             {availableTakers.map((taker) => (
               <option key={taker.id} value={taker.id}>
@@ -72,7 +73,7 @@ export function BookingForm({ availableTakers }: BookingFormProps) {
         <div>
           <label
             htmlFor="date"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 mb-2"
           >
             Select Date
           </label>
@@ -83,16 +84,18 @@ export function BookingForm({ availableTakers }: BookingFormProps) {
             required
             min={formatISTDate(new Date())}
             disabled={loading}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100"
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
           />
         </div>
 
         {error && (
-          <div className="text-red-600 bg-red-100 p-2 rounded">{error}</div>
+          <div className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">
+            {error}
+          </div>
         )}
 
         {success && (
-          <div className="text-green-600 bg-green-100 p-2 rounded">
+          <div className="text-green-600 bg-green-50 p-3 rounded-lg text-sm">
             Booking successful!
           </div>
         )}
@@ -100,9 +103,35 @@ export function BookingForm({ availableTakers }: BookingFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {loading ? "Booking..." : "Book Now"}
+          {loading ? (
+            <span className="flex items-center justify-center">
+              <svg
+                className="animate-spin h-5 w-5 mr-3 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Booking...
+            </span>
+          ) : (
+            "Book Now"
+          )}
         </button>
       </form>
     </div>
