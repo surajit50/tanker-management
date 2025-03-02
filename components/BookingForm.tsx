@@ -1,17 +1,21 @@
+
 "use client";
 import { useState } from "react";
 import { bookTanker } from "@/app/actions";
 import { formatISTDate } from "@/lib/dateUtils";
 
-interface BookingFormProps {
-  availableTakers: Array<{
-    id: string;
-    name: string;
-    type: string;
-  }>;
+interface Taker {
+  id: string;
+  name: string;
+  type: string;
+  isAvailable: boolean; // Add this field to distinguish available/unavailable takers
 }
 
-export function BookingForm({ availableTakers }: BookingFormProps) {
+interface BookingFormProps {
+  allTakers: Taker[]; // Pass all takers (both available and unavailable)
+}
+
+export function BookingForm({ allTakers }: BookingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -61,9 +65,13 @@ export function BookingForm({ availableTakers }: BookingFormProps) {
             disabled={loading}
             className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 disabled:bg-gray-100 transition duration-200"
           >
-            {availableTakers.map((taker) => (
-              <option key={taker.id} value={taker.id}>
-                {taker.name} ({taker.type})
+            {allTakers.map((taker) => (
+              <option
+                key={taker.id}
+                value={taker.id}
+                disabled={!taker.isAvailable} // Disable if taker is unavailable
+              >
+                {taker.name} ({taker.type}){!taker.isAvailable && " (Unavailable)"}
               </option>
             ))}
           </select>
