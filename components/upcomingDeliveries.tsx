@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -31,18 +32,7 @@ export function UpcomingDeliveries() {
         }
 
         const data = await response.json();
-
-        // Filter deliveries within the next 7 days
-        const today = new Date();
-        const sevenDaysLater = new Date(today);
-        sevenDaysLater.setDate(today.getDate() + 7);
-
-        const filteredDeliveries = data.filter((delivery: Booking) => {
-          const deliveryDate = new Date(delivery.date);
-          return deliveryDate >= today && deliveryDate <= sevenDaysLater;
-        });
-
-        setUpcomingDeliveries(filteredDeliveries);
+        setUpcomingDeliveries(data);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to fetch upcoming deliveries"
@@ -54,6 +44,35 @@ export function UpcomingDeliveries() {
 
     fetchUpcomingDeliveries();
   }, []);
+
+  // Helper function to group deliveries by date
+  const groupDeliveriesByDate = (deliveries: Booking[]) => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const groups = {
+      today: [] as Booking[],
+      tomorrow: [] as Booking[],
+      next7Days: [] as Booking[],
+    };
+
+    deliveries.forEach((delivery) => {
+      const deliveryDate = new Date(delivery.date);
+
+      if (deliveryDate.toDateString() === today.toDateString()) {
+        groups.today.push(delivery);
+      } else if (deliveryDate.toDateString() === tomorrow.toDateString()) {
+        groups.tomorrow.push(delivery);
+      } else if (deliveryDate > today && deliveryDate <= new Date(today.setDate(today.getDate() + 7))) {
+        groups.next7Days.push(delivery);
+      }
+    });
+
+    return groups;
+  };
+
+  const { today, tomorrow, next7Days } = groupDeliveriesByDate(upcomingDeliveries);
 
   if (loading) {
     return (
@@ -88,7 +107,7 @@ export function UpcomingDeliveries() {
     return (
       <div className="text-center text-gray-600">
         <CalendarIcon className="mx-auto h-8 w-8 mb-2" />
-        No upcoming deliveries within the next 7 days.
+        No upcoming deliveries.
       </div>
     );
   }
@@ -98,39 +117,120 @@ export function UpcomingDeliveries() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UserIcon className="h-6 w-6" />
-          Upcoming Deliveries (Next 7 Days)
+          Upcoming Deliveries
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ul className="space-y-4">
-          {upcomingDeliveries.map((delivery) => (
-            <li key={delivery.id}>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">
-                        {delivery.taker.name} ({delivery.taker.type})
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Scheduled for: {new Date(delivery.date).toLocaleString()}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        // Handle delivery actions (e.g., mark as completed)
-                      }}
-                      className="gap-2"
-                    >
-                      <CheckCircleIcon className="h-4 w-4" />
-                      Mark as Completed
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </li>
-          ))}
-        </ul>
+      <CardContent className="space-y-6">
+        {/* Today's Deliveries */}
+        {today.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Today</h3>
+            <ul className="space-y-4">
+              {today.map((delivery) => (
+                <li key={delivery.id}>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">
+                            {delivery.taker.name} ({delivery.taker.type})
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Scheduled for: {new Date(delivery.date).toLocaleString()}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            // Handle delivery actions (e.g., mark as completed)
+                          }}
+                          className="gap-2"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                          Mark as Completed
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Tomorrow's Deliveries */}
+        {tomorrow.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Tomorrow</h3>
+            <ul className="space-y-4">
+              {tomorrow.map((delivery) => (
+                <li key={delivery.id}>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">
+                            {delivery.taker.name} ({delivery.taker.type})
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Scheduled for: {new Date(delivery.date).toLocaleString()}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            // Handle delivery actions (e.g., mark as completed)
+                          }}
+                          className="gap-2"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                          Mark as Completed
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Next 7 Days' Deliveries */}
+        {next7Days.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Next 7 Days</h3>
+            <ul className="space-y-4">
+              {next7Days.map((delivery) => (
+                <li key={delivery.id}>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">
+                            {delivery.taker.name} ({delivery.taker.type})
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Scheduled for: {new Date(delivery.date).toLocaleString()}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            // Handle delivery actions (e.g., mark as completed)
+                          }}
+                          className="gap-2"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                          Mark as Completed
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
