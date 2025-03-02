@@ -8,7 +8,7 @@ interface Taker {
   id: string;
   name: string;
   type: string;
-  isAvailable: boolean; // Add this field to distinguish available/unavailable takers
+  status: string; // AVAILABLE or UNDER_MAINTENANCE
 }
 
 interface BookingFormProps {
@@ -69,9 +69,10 @@ export function BookingForm({ allTakers }: BookingFormProps) {
               <option
                 key={taker.id}
                 value={taker.id}
-                disabled={!taker.isAvailable} // Disable if taker is unavailable
+                disabled={taker.status !== "AVAILABLE"} // Disable if taker is not available
               >
-                {taker.name} ({taker.type}){!taker.isAvailable && " (Unavailable)"}
+                {taker.name} ({taker.type})
+                {taker.status !== "AVAILABLE" && " (Under Maintenance)"}
               </option>
             ))}
           </select>
