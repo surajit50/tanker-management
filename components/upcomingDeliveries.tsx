@@ -139,7 +139,7 @@ export function UpcomingDeliveries() {
                           {delivery.taker.name} ({delivery.taker.type})
                         </p>
                         <p className="text-sm text-gray-500">
-                          Scheduled for: {new Date(delivery.date).toLocaleString()}
+                          Scheduled for: {new Date(delivery.date).toLocaleDateString()}
                         </p>
                       </div>
                       <Button
@@ -179,7 +179,7 @@ export function UpcomingDeliveries() {
                           {delivery.taker.name} ({delivery.taker.type})
                         </p>
                         <p className="text-sm text-gray-500">
-                          Scheduled for: {new Date(delivery.date).toLocaleString()}
+                          Scheduled for: {new Date(delivery.date).toLocaleDateString()}
                         </p>
                       </div>
                       <Button
@@ -219,7 +219,7 @@ export function UpcomingDeliveries() {
                           {delivery.taker.name} ({delivery.taker.type})
                         </p>
                         <p className="text-sm text-gray-500">
-                          Scheduled for: {new Date(delivery.date).toLocaleString()}
+                          Scheduled for: {new Date(delivery.date).toLocaleDateString()}
                         </p>
                       </div>
                       <Button
