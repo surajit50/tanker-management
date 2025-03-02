@@ -1,7 +1,7 @@
+
 "use client";
 import { useState, useEffect } from "react";
-
-import { formatISTDate, parseISTDate } from "@/lib/dateUtils";
+import { useSearchParams, useRouter } from "next/navigation"; // Import useSearchParams and useRouter
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
-import { useRouter } from "next/navigation";
 
 interface Taker {
   id: string;
@@ -20,12 +19,23 @@ interface Taker {
 
 export default function BookingPage() {
   const [availableTakers, setAvailableTakers] = useState<Taker[]>([]);
-  const [selectedDate, setSelectedDate] = useState(
-    parseISTDate(new Date().toISOString())
-  );
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Initialize with current date
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams(); // Get search params from the URL
+
+  // Read the date from the search params and update selectedDate
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      const parsedDate = new Date(dateParam);
+      if (!isNaN(parsedDate.getTime())) {
+        setSelectedDate(parsedDate);
+      }
+    }
+  }, [searchParams]);
+
   // Fetch available takers for the selected date
   useEffect(() => {
     const fetchAvailableTakers = async () => {
@@ -33,7 +43,7 @@ export default function BookingPage() {
         setLoading(true);
         setError(null);
 
-        const dateKey = formatISTDate(selectedDate);
+        const dateKey = selectedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
         const response = await fetch(
           `/api/availability/takers?date=${dateKey}`
         );
@@ -57,6 +67,16 @@ export default function BookingPage() {
 
     fetchAvailableTakers();
   }, [selectedDate]);
+
+  // Handle date change
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = new Date(e.target.value); // Parse the date from the input
+    setSelectedDate(newDate);
+
+    // Update the URL with the new date
+    const dateKey = newDate.toISOString().split("T")[0];
+    router.push(`/booking?date=${dateKey}`);
+  };
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -90,9 +110,9 @@ export default function BookingPage() {
             <Input
               type="date"
               id="date"
-              value={formatISTDate(selectedDate)}
-              min={formatISTDate(new Date())}
-              onChange={(e) => setSelectedDate(parseISTDate(e.target.value))}
+              value={selectedDate.toISOString().split("T")[0]} // Format as YYYY-MM-DD
+              min={new Date().toISOString().split("T")[0]} // Set min date to today
+              onChange={handleDateChange} // Handle date change
               className="mt-1"
             />
           </div>
