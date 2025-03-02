@@ -85,7 +85,7 @@ export default function BookingPage() {
             No takers available for this date.
           </div>
         ) : (
-          <BookingForm allTakers={availableTakers} />
+          <BookingForm allTakers={availableTakers} selectedDate={selectedDate} />
         )}
       </div>
     </div>
