@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import { BookingForm } from "@/components/BookingForm";
@@ -7,7 +8,7 @@ interface Taker {
   id: string;
   name: string;
   type: string;
-  status: string; // Add status field to match your Prisma model
+  status: string; // AVAILABLE, UNDER_MAINTENANCE, or BOOKED
 }
 
 export default function BookingPage() {
