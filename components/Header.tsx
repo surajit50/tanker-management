@@ -12,7 +12,7 @@ export function Header() {
   const navigationLinks = [
     { name: "Home", href: "/" },
     { name: "Bookings", href: "/booking" },
-    { name: "Manage Takers", href: "/takers" },
+    { name: "Manage Takers", href: "/tanker" },
   ];
 
   return (
