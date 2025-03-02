@@ -1,4 +1,4 @@
-import { UpcomingDeliveries } from "@/1components/upcomingDeliveries ";
+import { UpcomingDeliveries } from "@/components/upcomingDeliveries ";
 //components/upcomingDecomponents/upcomingDeliveries.tsxliveries.tsx
 export default function DeliveriesPage() {
   return (
