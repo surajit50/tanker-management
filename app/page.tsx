@@ -1,7 +1,5 @@
-import { AddTakerForm } from "@/components/AddTakerForm";
 import { BookingsList } from "@/components/BookingsList";
 import { Calendar } from "@/components/Calendar";
-import { TakerManagement } from "@/components/TakerManagement";
 
 export default function DashboardPage() {
   return (
@@ -11,11 +9,6 @@ export default function DashboardPage() {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <AddTakerForm />
-          <TakerManagement />
-        </div>
-
         <div className="space-y-6">
           <Calendar />
           <BookingsList />
