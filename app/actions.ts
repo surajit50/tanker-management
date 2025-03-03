@@ -31,7 +31,7 @@ export async function bookTanker(formData: FormData) {
   // Create the booking
   await prisma.booking.create({
     data: {
-      takerId: takerId, // Set takerId to null if not provided
+      takerId: takerId,
       date,
       mobileNo, // Include mobile number
       deliveryAddress, // Include delivery address
