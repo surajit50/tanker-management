@@ -69,8 +69,12 @@ export function UpcomingDeliveries() {
   };
 
   const { today, tomorrow, next7Days } = groupDeliveriesByDate(upcomingDeliveries);
+
+  // Limit today's deliveries to 3 items
+  const limitedToday = today.slice(0, 3);
+
   const allDeliveries = [
-    ...today.map(d => ({ ...d, group: "Today" as const })),
+    ...limitedToday.map(d => ({ ...d, group: "Today" as const })),
     ...tomorrow.map(d => ({ ...d, group: "Tomorrow" as const })),
     ...next7Days.map(d => ({ ...d, group: "Next 7 Days" as const })),
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
