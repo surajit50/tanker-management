@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 import { AlertCircle, Loader2, RefreshCw, Calendar, XCircle } from "lucide-react";
 import { BookingForm } from "./BookingForm";
 
-interface Taker {
+export interface Taker {
   id: string;
   name: string;
   type: string;
