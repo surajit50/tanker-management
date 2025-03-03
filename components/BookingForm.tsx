@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input"; // Import Input component
+import { Input } from "@/components/ui/input";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -27,7 +27,7 @@ interface Taker {
 interface BookingFormProps {
   allTakers: Taker[];
   selectedDate: Date;
-  onBookingSuccess: () => void; // New prop to trigger parent component refresh
+  onBookingSuccess: () => void; // Trigger parent component refresh
 }
 
 export function BookingForm({
@@ -38,10 +38,11 @@ export function BookingForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0); // Progress state
+  const [progress, setProgress] = useState(0);
   const [selectedTakerId, setSelectedTakerId] = useState<string>("");
-  const [mobileNo, setMobileNo] = useState<string>(""); // State for mobile number
-  const [deliveryAddress, setDeliveryAddress] = useState<string>(""); // State for delivery address
+  const [mobileNo, setMobileNo] = useState<string>("");
+  const [bookingBy, setBookingBy] = useState<string>("");
+  const [deliveryAddress, setDeliveryAddress] = useState<string>("");
   const [localTakers, setLocalTakers] = useState<Taker[]>(allTakers);
   const router = useRouter();
 
@@ -55,9 +56,10 @@ export function BookingForm({
     setSelectedTakerId("");
     setMobileNo("");
     setDeliveryAddress("");
+    setBookingBy("");
     setSuccess(false);
     setError(null);
-  }, [selectedDate]); // Reset form when selectedDate changes
+  }, [selectedDate]); //Corrected dependency array
 
   const refreshData = useCallback(() => {
     router.refresh();
@@ -73,13 +75,14 @@ export function BookingForm({
 
     const formData = new FormData(event.currentTarget);
     formData.append("date", selectedDate.toISOString());
-    formData.append("mobileNo", mobileNo); // Add mobile number to form data
-    formData.append("deliveryAddress", deliveryAddress); // Add delivery address to form data
+    formData.append("mobileNo", mobileNo);
+    formData.append("deliveryAddress", deliveryAddress);
+    if (bookingBy) formData.append("bookingBy", bookingBy);
 
     try {
-      // Simulate progress (for demonstration purposes)
+      // Simulate progress
       const interval = setInterval(() => {
-        setProgress((prev) => (prev < 90 ? prev + 10 : prev)); // Increment progress
+        setProgress((prev) => (prev < 90 ? prev + 10 : prev));
       }, 300);
 
       await bookTanker(formData);
@@ -88,6 +91,7 @@ export function BookingForm({
       setSelectedTakerId("");
       setMobileNo("");
       setDeliveryAddress("");
+      setBookingBy("");
 
       // Update local state immediately
       setLocalTakers((prevTakers) =>
@@ -128,17 +132,40 @@ export function BookingForm({
             <SelectValue placeholder="Choose a taker" />
           </SelectTrigger>
           <SelectContent className="bg-white shadow-lg rounded-lg">
-            {availableTakers.map((taker) => (
-              <SelectItem
-                key={taker.id}
-                value={taker.id}
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                {taker.name} ({taker.type})
+            {availableTakers.length > 0 ? (
+              availableTakers.map((taker) => (
+                <SelectItem
+                  key={taker.id}
+                  value={taker.id}
+                  className="hover:bg-gray-100 cursor-pointer"
+                >
+                  {taker.name} ({taker.type})
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="none" disabled>
+                No available takers
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="deliveryAddress" className="text-lg font-semibold">
+          Delivery Address
+        </Label>
+        <Input
+          id="deliveryAddress"
+          name="deliveryAddress"
+          type="text"
+          placeholder="Enter delivery address"
+          value={deliveryAddress}
+          onChange={(e) => setDeliveryAddress(e.target.value)}
+          required
+          disabled={loading}
+          className="w-full py-3"
+        />
       </div>
 
       <div className="space-y-2">
@@ -159,17 +186,16 @@ export function BookingForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="deliveryAddress" className="text-lg font-semibold">
-          Delivery Address
+        <Label htmlFor="bookingBy" className="text-lg font-semibold">
+          Booking By (Optional)
         </Label>
         <Input
-          id="deliveryAddress"
-          name="deliveryAddress"
+          id="bookingBy"
+          name="bookingBy"
           type="text"
-          placeholder="Enter delivery address"
-          value={deliveryAddress}
-          onChange={(e) => setDeliveryAddress(e.target.value)}
-          required
+          placeholder="Enter name of person booking"
+          value={bookingBy}
+          onChange={(e) => setBookingBy(e.target.value)}
           disabled={loading}
           className="w-full py-3"
         />
@@ -196,7 +222,7 @@ export function BookingForm({
       >
         <div
           className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
-          style={{ width: `${progress}%` }} // Progress bar
+          style={{ width: `${progress}%` }}
         />
         <span className="relative z-10 flex items-center justify-center">
           {loading ? (

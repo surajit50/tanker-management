@@ -11,28 +11,31 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
-enum TankerStatus{
-AVAILABLE
-UNDER_MAINTENANCE
+
+enum TankerStatus {
+  AVAILABLE
+  UNDER_MAINTENANCE
 }
+
 // Updated Prisma Schema
 model Taker {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  id       String       @id @default(auto()) @map("_id") @db.ObjectId
   type     String
   name     String
-  status   TankerStatus    @default( AVAILABLE ) // AVAILABLE, UNDER_MAINTENANCE
+  status   TankerStatus @default(AVAILABLE) // AVAILABLE, UNDER_MAINTENANCE
   bookings Booking[]
 
   @@map("takers")
 }
 
 model Booking {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  date           DateTime
-  taker          Taker    @relation(fields: [takerId], references: [id])
-  takerId        String   @db.ObjectId
-  mobileNo       String   // Add mobile number field
-  deliveryAddress String  // Add delivery address field
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  date            DateTime
+  taker           Taker    @relation(fields: [takerId], references: [id])
+  takerId         String   @db.ObjectId
+  bookingBy       String
+  mobileNo        String // Add mobile number field
+  deliveryAddress String // Add delivery address field
 
   @@map("bookings")
 }
