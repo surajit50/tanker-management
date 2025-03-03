@@ -75,6 +75,19 @@ export function UpcomingDeliveries() {
     ...next7Days.map(d => ({ ...d, group: "Next 7 Days" as const })),
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+  const formatDate = (dateString: string, group: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = group === "Next 7 Days" 
+      ? { weekday: 'short', month: 'short', day: 'numeric' }
+      : { month: 'short', day: 'numeric' };
+    
+    const datePart = date.toLocaleDateString('en-US', options);
+    
+    if (group === "Today") return `Today, ${datePart}`;
+    if (group === "Tomorrow") return `Tomorrow, ${datePart}`;
+    return datePart;
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -121,6 +134,7 @@ export function UpcomingDeliveries() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Date</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Tanker Name</th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
               </tr>
@@ -128,6 +142,17 @@ export function UpcomingDeliveries() {
             <tbody className="divide-y">
               {allDeliveries.map((delivery) => (
                 <tr key={delivery.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      {delivery.group === "Today" && (
+                        <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                      )}
+                      {delivery.group === "Tomorrow" && (
+                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                      )}
+                      {formatDate(delivery.date, delivery.group)}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {delivery.taker.name}
                   </td>
