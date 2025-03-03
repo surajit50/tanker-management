@@ -7,7 +7,7 @@ import {ClientForm }from "@/components/BookingPageClient";
 export default function BookingPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <BookingPageClient />
+      <ClientForm />
     </Suspense>
   );
 }
