@@ -1,10 +1,11 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CalendarIcon, UserIcon, CheckCircleIcon } from "lucide-react";
+import { CalendarIcon, UserIcon, CheckCircleIcon, PhoneIcon, MapPinIcon, ClockIcon } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -102,11 +103,32 @@ export function UpcomingDeliveries() {
     return datePart;
   };
 
+  const formatDateTime = (dateString: string, group: string) => {
+    const date = new Date(dateString);
+    const timeOptions: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+    
+    const datePart = formatDate(dateString, group);
+    const timePart = date.toLocaleTimeString('en-US', timeOptions);
+
+    if (group === "Today" || group === "Tomorrow") {
+      return `${datePart} • ${timePart}`;
+    }
+    return datePart;
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-[58px] w-full rounded-lg" />
+          <div key={i} className="p-4 space-y-3 border rounded-lg">
+            <Skeleton className="h-4 w-[200px]" />
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-[180px]" />
+              <Skeleton className="h-3 w-[160px]" />
+              <Skeleton className="h-3 w-[140px]" />
+            </div>
+            <Skeleton className="h-8 w-[100px]" />
+          </div>
         ))}
       </div>
     );
@@ -115,109 +137,142 @@ export function UpcomingDeliveries() {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          {error}
+        <div className="flex items-center gap-3">
+          <div>
+            <AlertTitle>Error Loading Deliveries</AlertTitle>
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </div>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
-            className="ml-2"
             onClick={() => window.location.reload()}
           >
-            Retry
+            Try Again
           </Button>
-        </AlertDescription>
+        </div>
       </Alert>
     );
   }
 
   if (allDeliveries.length === 0) {
     return (
-      <div className="text-center text-gray-600 py-8">
-        <CalendarIcon className="mx-auto h-8 w-8 mb-2" />
-        No upcoming deliveries.
+      <div className="text-center p-8 bg-gray-50 rounded-lg">
+        <CalendarIcon className="mx-auto h-12 w-12 mb-4 text-gray-400" />
+        <h3 className="text-lg font-medium text-gray-900">No upcoming deliveries</h3>
+        <p className="mt-1 text-sm text-gray-500">All caught up! Check back later for new deliveries.</p>
       </div>
     );
   }
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-          <UserIcon className="h-6 w-6 text-primary" />
-          Upcoming Deliveries
+    <Card className="shadow-lg">
+      <CardHeader className="border-b">
+        <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+          <UserIcon className="h-8 w-8 text-primary" />
+          <span>Upcoming Deliveries</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="rounded-md border">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                  Booking By
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                  Booker Mobile No
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                  Delivery Location
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
-                  Tanker Name
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {allDeliveries.map((delivery) => (
-                <tr
-                  key={delivery.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      {delivery.group === "Today" && (
-                        <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                      )}
-                      {delivery.group === "Tomorrow" && (
-                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                      )}
-                      {formatDate(delivery.date, delivery.group)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {delivery.bookingby}
-                  </td>
-                  <td>{delivery.mobileNo}</td>
+      <CardContent className="p-6 space-y-6">
+        {today.length > 0 && (
+          <div className="space-y-3">
+            <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <ClockIcon className="h-5 w-5" />
+              Today's Deliveries ({today.length})
+            </div>
+            {today.map((delivery) => (
+              <DeliveryCard 
+                key={delivery.id}
+                delivery={delivery}
+                group="Today"
+                formatDateTime={formatDateTime}
+              />
+            ))}
+          </div>
+        )}
 
-                  <td>{delivery.deliveryAddress}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {delivery.taker.name}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() => {
-                        /* Handle completion */
-                      }}
-                    >
-                      <CheckCircleIcon className="h-4 w-4" />
-                      Complete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {tomorrow.length > 0 && (
+          <div className="space-y-3">
+            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <ClockIcon className="h-5 w-5" />
+              Tomorrow's Deliveries ({tomorrow.length})
+            </div>
+            {tomorrow.map((delivery) => (
+              <DeliveryCard
+                key={delivery.id}
+                delivery={delivery}
+                group="Tomorrow"
+                formatDateTime={formatDateTime}
+              />
+            ))}
+          </div>
+        )}
+
+        {next7Days.length > 0 && (
+          <div className="space-y-3">
+            <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              Next 7 Days ({next7Days.length})
+            </div>
+            {next7Days.map((delivery) => (
+              <DeliveryCard
+                key={delivery.id}
+                delivery={delivery}
+                group="Next 7 Days"
+                formatDateTime={formatDateTime}
+              />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+function DeliveryCard({ delivery, group, formatDateTime }: { 
+  delivery: Booking, 
+  group: string,
+  formatDateTime: (date: string, group: string) => string 
+}) {
+  return (
+    <div className="p-4 bg-white border rounded-lg hover:border-primary transition-colors">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-2 flex-1">
+          <div className="flex items-center gap-2 text-sm font-medium text-primary">
+            <CalendarIcon className="h-4 w-4" />
+            {formatDateTime(delivery.date, group)}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <UserIcon className="h-4 w-4 text-gray-500" />
+            <span className="font-medium">{delivery.bookingby}</span>
+            <span className="text-gray-500">•</span>
+            <PhoneIcon className="h-4 w-4 text-gray-500" />
+            <span className="text-gray-600">{delivery.mobileNo}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="h-4 w-4 text-gray-500" />
+            <span className="text-gray-600">{delivery.deliveryAddress}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm bg-gray-100 px-2 py-1 rounded-md">
+              Tanker: {delivery.taker.name} ({delivery.taker.type})
+            </span>
+          </div>
+        </div>
+
+        <Button
+          size="sm"
+          className="gap-2 md:w-auto w-full"
+          onClick={() => {/* Handle completion */}}
+        >
+          <CheckCircleIcon className="h-4 w-4" />
+          Mark Complete
+        </Button>
+      </div>
+    </div>
   );
 }
