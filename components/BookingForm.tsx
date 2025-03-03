@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect } from "react";
@@ -13,19 +12,24 @@ interface BookingFormProps {
   onBookingSuccess: () => void;
 }
 
+interface BookingFormData {
+  takerId: string;
+  date: Date;
+}
+
 export function BookingForm({
   allTakers,
   selectedDate,
   onBookingSuccess,
 }: BookingFormProps) {
-  const { register, handleSubmit, formState, setValue } = useForm();
+  const { register, handleSubmit, formState, setValue } = useForm<BookingFormData>();
 
   useEffect(() => {
     // Pre-fill the form with the selected date
     setValue("date", selectedDate.toISOString().split("T")[0]);
   }, [selectedDate, setValue]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: BookingFormData) => {
     try {
       const response = await fetch("/api/bookings", {
         method: "POST",
