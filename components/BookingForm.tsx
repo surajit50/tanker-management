@@ -1,87 +1,119 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Taker } from "./BookingPageClient"; // Import the Taker type
+import { Label } from "./ui/label";
+import { Calendar } from "lucide-react";
+
+interface Taker {
+  id: string;
+  name: string;
+  type: string;
+}
+
+interface BookingFormInputs {
+  date: string;
+  takerId: string;
+  bookingBy: string;
+  mobileNo: string;
+  deliveryAddress: string;
+}
 
 interface BookingFormProps {
-  allTakers: Taker[];
-  selectedDate: Date;
-  onBookingSuccess: () => void;
+  takers: Taker[];
+  onSubmit: (data: BookingFormInputs) => void;
+  isLoading?: boolean;
 }
 
-interface BookingFormData {
-  takerId: string;
-  date: string;
-}
+export function BookingForm({ takers, onSubmit, isLoading }: BookingFormProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<BookingFormInputs>();
 
-export function BookingForm({
-  allTakers,
-  selectedDate,
-  onBookingSuccess,
-}: BookingFormProps) {
-  const { register, handleSubmit, formState, setValue } = useForm<BookingFormData>();
-
-  useEffect(() => {
-    // Pre-fill the form with the selected date
-    setValue("date", selectedDate.toISOString().split("T")[0]);
-  }, [selectedDate, setValue]);
-
-  const onSubmit = async (data: BookingFormData) => {
-    try {
-      const response = await fetch("/api/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create booking");
-      }
-
-      onBookingSuccess();
-    } catch (error) {
-      console.error("Booking failed:", error);
-    }
+  const handleFormSubmit: SubmitHandler<BookingFormInputs> = (data) => {
+    onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      {/* Date Field */}
       <div>
-        <label htmlFor="taker" className="block text-sm font-medium mb-1">
-          Select Taker
-        </label>
+        <Label htmlFor="date">Booking Date</Label>
+        <Input
+          id="date"
+          type="datetime-local"
+          {...register("date", { required: "Date is required" })}
+        />
+        {errors.date && (
+          <p className="text-sm text-red-500">{errors.date.message}</p>
+        )}
+      </div>
+
+      {/* Taker Dropdown */}
+      <div>
+        <Label htmlFor="takerId">Select Taker</Label>
         <select
-          id="taker"
-          {...register("takerId", { required: true })}
+          id="takerId"
+          {...register("takerId", { required: "Taker is required" })}
           className="w-full p-2 border rounded-md"
         >
-          {allTakers.map((taker) => (
+          <option value="">Select a taker</option>
+          {takers.map((taker) => (
             <option key={taker.id} value={taker.id}>
               {taker.name} ({taker.type})
             </option>
           ))}
         </select>
+        {errors.takerId && (
+          <p className="text-sm text-red-500">{errors.takerId.message}</p>
+        )}
       </div>
 
+      {/* Booking By Field */}
       <div>
-        <label htmlFor="date" className="block text-sm font-medium mb-1">
-          Booking Date
-        </label>
+        <Label htmlFor="bookingBy">Booking By</Label>
         <Input
-          type="date"
-          id="date"
-          {...register("date", { required: true })}
-          className="w-full"
+          id="bookingBy"
+          {...register("bookingBy", { required: "Name is required" })}
         />
+        {errors.bookingBy && (
+          <p className="text-sm text-red-500">{errors.bookingBy.message}</p>
+        )}
       </div>
 
-      <Button type="submit" disabled={formState.isSubmitting}>
-        {formState.isSubmitting ? "Booking..." : "Confirm Booking"}
+      {/* Mobile Number Field */}
+      <div>
+        <Label htmlFor="mobileNo">Mobile Number</Label>
+        <Input
+          id="mobileNo"
+          {...register("mobileNo", { required: "Mobile number is required" })}
+        />
+        {errors.mobileNo && (
+          <p className="text-sm text-red-500">{errors.mobileNo.message}</p>
+        )}
+      </div>
+
+      {/* Delivery Address Field */}
+      <div>
+        <Label htmlFor="deliveryAddress">Delivery Address</Label>
+        <Input
+          id="deliveryAddress"
+          {...register("deliveryAddress", {
+            required: "Delivery address is required",
+          })}
+        />
+        {errors.deliveryAddress && (
+          <p className="text-sm text-red-500">{errors.deliveryAddress.message}</p>
+        )}
+      </div>
+
+      {/* Submit Button */}
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? "Submitting..." : "Create Booking"}
       </Button>
     </form>
   );
