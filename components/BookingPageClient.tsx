@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { BookingForm } from "./BookingForm";
 
 interface Taker {
@@ -37,40 +38,40 @@ export default function BookingPageClient() {
   }, [searchParams]);
 
   // Fetch available takers for the selected date
-  useEffect(() => {
-    const fetchAvailableTakers = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchAvailableTakers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const dateKey = selectedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-        const response = await fetch(
-          `/api/availability/takers?date=${dateKey}`
-        );
+      const dateKey = selectedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      const response = await fetch(`/api/availability/takers?date=${dateKey}`);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch available takers");
-        }
-
-        const data = await response.json();
-        setAvailableTakers(data);
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to fetch available takers"
-        );
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch available takers");
       }
-    };
 
+      const data = await response.json();
+      setAvailableTakers(data);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch available takers"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchAvailableTakers();
   }, [selectedDate]);
 
   // Handle date change
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = new Date(e.target.value); // Parse the date from the input
+    if (isNaN(newDate.getTime())) return; // Validate the date
+
     setSelectedDate(newDate);
 
     // Update the URL with the new date
@@ -80,11 +81,16 @@ export default function BookingPageClient() {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">Book a Taker</h1>
+      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
+        <Calendar className="h-8 w-8 text-primary" />
+        Book a Taker
+      </h1>
 
-      <Card>
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Select Date and Taker</CardTitle>
+          <CardTitle className="text-2xl font-semibold">
+            Select Date and Taker
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
@@ -95,7 +101,7 @@ export default function BookingPageClient() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.location.reload()}
+                  onClick={fetchAvailableTakers}
                   className="ml-2"
                 >
                   <RefreshCw className="h-4 w-4 mr-1" />
@@ -106,15 +112,28 @@ export default function BookingPageClient() {
           )}
 
           <div className="mb-6">
-            <Label htmlFor="date">Select Date</Label>
-            <Input
-              type="date"
-              id="date"
-              value={selectedDate.toISOString().split("T")[0]} // Format as YYYY-MM-DD
-              min={new Date().toISOString().split("T")[0]} // Set min date to today
-              onChange={handleDateChange} // Handle date change
-              className="mt-1"
-            />
+            <Label htmlFor="date" className="block text-sm font-medium mb-1">
+              Select Date
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                id="date"
+                value={selectedDate.toISOString().split("T")[0]} // Format as YYYY-MM-DD
+                min={new Date().toISOString().split("T")[0]} // Set min date to today
+                onChange={handleDateChange} // Handle date change
+                className="flex-1"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchAvailableTakers}
+                disabled={loading}
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {loading ? (
@@ -126,7 +145,8 @@ export default function BookingPageClient() {
             </div>
           ) : availableTakers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No takers available for this date.
+              <XCircle className="h-10 w-10 mx-auto mb-2 text-gray-400" />
+              <p>No takers available for this date.</p>
             </div>
           ) : (
             <BookingForm
