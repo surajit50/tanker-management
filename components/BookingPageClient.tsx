@@ -1,162 +1,88 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Alert, AlertDescription } from "./ui/alert";
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { AlertCircle, Loader2, RefreshCw, Calendar, XCircle } from "lucide-react";
-import { BookingForm } from "./BookingForm";
 
-export interface Taker {
-  id: string;
+interface TakerFormInputs {
   name: string;
   type: string;
-  status: string; // AVAILABLE, UNDER_MAINTENANCE, or BOOKED
+  status: string;
 }
 
-export default function BookingPageClient() {
-  const [availableTakers, setAvailableTakers] = useState<Taker[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+interface ClientFormProps {
+  onSubmit: (data: TakerFormInputs) => void;
+  isLoading?: boolean;
+  initialData?: TakerFormInputs;
+}
 
-  // Read the date from the search params and update selectedDate
-  useEffect(() => {
-    const dateParam = searchParams.get("date");
-    if (dateParam) {
-      const parsedDate = new Date(dateParam);
-      if (!isNaN(parsedDate.getTime())) {
-        setSelectedDate(parsedDate);
-      }
-    }
-  }, [searchParams]);
+export function ClientForm({
+  onSubmit,
+  isLoading,
+  initialData,
+}: ClientFormProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<TakerFormInputs>({
+    defaultValues: initialData,
+  });
 
-  // Fetch available takers for the selected date
-  const fetchAvailableTakers = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const dateKey = selectedDate.toISOString().split("T")[0];
-      const response = await fetch(`/api/availability/takers?date=${dateKey}`);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch available takers");
-      }
-
-      const data = await response.json();
-      setAvailableTakers(data);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to fetch available takers"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedDate]);
-
-  useEffect(() => {
-    fetchAvailableTakers();
-  }, [fetchAvailableTakers]);
-
-  // Handle date change
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value);
-    if (isNaN(newDate.getTime())) return;
-
-    setSelectedDate(newDate);
-
-    // Update the URL with the new date
-    const dateKey = newDate.toISOString().split("T")[0];
-    router.push(`/booking?date=${dateKey}`);
+  const handleFormSubmit: SubmitHandler<TakerFormInputs> = (data) => {
+    onSubmit(data);
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
-        <Calendar className="h-8 w-8 text-primary" />
-        Book a Taker
-      </h1>
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      {/* Name Field */}
+      <div>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          {...register("name", { required: "Name is required" })}
+        />
+        {errors.name && (
+          <p className="text-sm text-red-500">{errors.name.message}</p>
+        )}
+      </div>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold">
-            Select Date and Taker
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>{error}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchAvailableTakers}
-                  className="ml-2"
-                >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Retry
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
+      {/* Type Field */}
+      <div>
+        <Label htmlFor="type">Type</Label>
+        <Input
+          id="type"
+          {...register("type", { required: "Type is required" })}
+        />
+        {errors.type && (
+          <p className="text-sm text-red-500">{errors.type.message}</p>
+        )}
+      </div>
 
-          <div className="mb-6">
-            <Label htmlFor="date" className="block text-sm font-medium mb-1">
-              Select Date
-            </Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                id="date"
-                value={selectedDate.toISOString().split("T")[0]}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={handleDateChange}
-                className="flex-1"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchAvailableTakers}
-                disabled={loading}
-              >
-                <RefreshCw className="h-4 w-4 mr-1" />
-                Refresh
-              </Button>
-            </div>
-          </div>
+      {/* Status Field */}
+      <div>
+        <Label htmlFor="status">Status</Label>
+        <select
+          id="status"
+          {...register("status", { required: "Status is required" })}
+          className="w-full p-2 border rounded-md"
+        >
+          <option value="AVAILABLE">Available</option>
+          <option value="UNDER_MAINTENANCE">Under Maintenance</option>
+          <option value="BOOKED">Booked</option>
+        </select>
+        {errors.status && (
+          <p className="text-sm text-red-500">{errors.status.message}</p>
+        )}
+      </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-              <p className="text-muted-foreground">
-                Loading available takers...
-              </p>
-            </div>
-          ) : availableTakers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <XCircle className="h-10 w-10 mx-auto mb-2 text-gray-400" />
-              <p>No takers available for this date.</p>
-            </div>
-          ) : (
-            <BookingForm
-              allTakers={availableTakers}
-              selectedDate={selectedDate}
-              onBookingSuccess={() => router.refresh()}
-            />
-          )}
-        </CardContent>
-      </Card>
-    </div>
+      {/* Submit Button */}
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? "Submitting..." : "Save Taker"}
+      </Button>
+    </form>
   );
 }
