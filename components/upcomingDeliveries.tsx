@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -8,9 +7,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarIcon, UserIcon, CheckCircleIcon } from "lucide-react";
 
 interface Booking {
-  id: string;
-  date: string;
-  taker: {
+  _id: { $oid: string };
+  date: { $date: { $numberLong: string } };
+  takerId: { $oid: string };
+  taker?: {
     id: string;
     name: string;
     type: string;
@@ -56,7 +56,7 @@ export function UpcomingDeliveries() {
     };
 
     return deliveries.reduce((acc: { today: Booking[]; tomorrow: Booking[]; next7Days: Booking[] }, delivery) => {
-      const deliveryDate = new Date(delivery.date);
+      const deliveryDate = new Date(Number(delivery.date.$date.$numberLong));
       if (isSameDate(deliveryDate, today)) {
         acc.today.push(delivery);
       } else if (isSameDate(deliveryDate, tomorrow)) {
@@ -77,10 +77,10 @@ export function UpcomingDeliveries() {
     ...limitedToday.map(d => ({ ...d, group: "Today" as const })),
     ...tomorrow.map(d => ({ ...d, group: "Tomorrow" as const })),
     ...next7Days.map(d => ({ ...d, group: "Next 7 Days" as const })),
-  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  ].sort((a, b) => new Date(Number(a.date.$date.$numberLong)).getTime() - new Date(Number(b.date.$date.$numberLong)).getTime());
 
-  const formatDate = (dateString: string, group: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: { $date: { $numberLong: string } }, group: string) => {
+    const date = new Date(Number(dateString.$date.$numberLong));
     const options: Intl.DateTimeFormatOptions = group === "Next 7 Days" 
       ? { weekday: 'short', month: 'short', day: 'numeric' }
       : { month: 'short', day: 'numeric' };
@@ -146,7 +146,7 @@ export function UpcomingDeliveries() {
             </thead>
             <tbody className="divide-y">
               {allDeliveries.map((delivery) => (
-                <tr key={delivery.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={delivery._id.$oid} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center gap-2">
                       {delivery.group === "Today" && (
@@ -158,8 +158,8 @@ export function UpcomingDeliveries() {
                       {formatDate(delivery.date, delivery.group)}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{delivery.taker.name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{delivery.taker.type}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{delivery.taker?.name || "Unknown"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500">{delivery.taker?.type || "Unknown"}</td>
                   <td className="px-4 py-3 text-right">
                     <Button
                       size="sm"
