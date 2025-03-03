@@ -46,11 +46,20 @@ export function UpcomingDeliveries() {
     const nextWeek = new Date(today);
     nextWeek.setDate(today.getDate() + 7);
 
+    // Helper function to compare dates without time
+    const isSameDate = (date1: Date, date2: Date) => {
+      return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+      );
+    };
+
     return deliveries.reduce((acc: { today: Booking[]; tomorrow: Booking[]; next7Days: Booking[] }, delivery) => {
       const deliveryDate = new Date(delivery.date);
-      if (deliveryDate.toDateString() === today.toDateString()) {
+      if (isSameDate(deliveryDate, today)) {
         acc.today.push(delivery);
-      } else if (deliveryDate.toDateString() === tomorrow.toDateString()) {
+      } else if (isSameDate(deliveryDate, tomorrow)) {
         acc.tomorrow.push(delivery);
       } else if (deliveryDate > today && deliveryDate <= nextWeek) {
         acc.next7Days.push(delivery);
