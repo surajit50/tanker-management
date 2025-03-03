@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Taker } from "./BookingPageClient";
 
 interface BookingFormProps {
   allTakers: Taker[];
