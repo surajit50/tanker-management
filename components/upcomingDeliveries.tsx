@@ -7,10 +7,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CalendarIcon, UserIcon, CheckCircleIcon } from "lucide-react";
 
 interface Booking {
-  _id: { $oid: string };
-  date: { $date: { $numberLong: string } };
-  takerId: { $oid: string };
-  taker?: {
+  id: string;
+  date: string;
+  taker: {
     id: string;
     name: string;
     type: string;
@@ -56,7 +55,7 @@ export function UpcomingDeliveries() {
     };
 
     return deliveries.reduce((acc: { today: Booking[]; tomorrow: Booking[]; next7Days: Booking[] }, delivery) => {
-      const deliveryDate = new Date(Number(delivery.date.$date.$numberLong));
+      const deliveryDate = new Date(delivery.date);
       if (isSameDate(deliveryDate, today)) {
         acc.today.push(delivery);
       } else if (isSameDate(deliveryDate, tomorrow)) {
@@ -70,27 +69,11 @@ export function UpcomingDeliveries() {
 
   const { today, tomorrow, next7Days } = groupDeliveriesByDate(upcomingDeliveries);
 
-  // Limit today's deliveries to 3 items
-  const limitedToday = today.slice(0, 3);
-
   const allDeliveries = [
-    ...limitedToday.map(d => ({ ...d, group: "Today" as const })),
+    ...today.map(d => ({ ...d, group: "Today" as const })),
     ...tomorrow.map(d => ({ ...d, group: "Tomorrow" as const })),
     ...next7Days.map(d => ({ ...d, group: "Next 7 Days" as const })),
-  ].sort((a, b) => new Date(Number(a.date.$date.$numberLong)).getTime() - new Date(Number(b.date.$date.$numberLong)).getTime());
-
-  const formatDate = (dateString: { $date: { $numberLong: string } }, group: string) => {
-    const date = new Date(Number(dateString.$date.$numberLong));
-    const options: Intl.DateTimeFormatOptions = group === "Next 7 Days" 
-      ? { weekday: 'short', month: 'short', day: 'numeric' }
-      : { month: 'short', day: 'numeric' };
-    
-    const datePart = date.toLocaleDateString('en-US', options);
-    
-    if (group === "Today") return `Today, ${datePart}`;
-    if (group === "Tomorrow") return `Tomorrow, ${datePart}`;
-    return datePart;
-  };
+  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   if (loading) {
     return (
@@ -138,28 +121,16 @@ export function UpcomingDeliveries() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Recipient</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Type</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Tanker Name</th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {allDeliveries.map((delivery) => (
-                <tr key={delivery._id.$oid} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      {delivery.group === "Today" && (
-                        <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                      )}
-                      {delivery.group === "Tomorrow" && (
-                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                      )}
-                      {formatDate(delivery.date, delivery.group)}
-                    </div>
+                <tr key={delivery.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    {delivery.taker.name}
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{delivery.taker?.name || "Unknown"}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{delivery.taker?.type || "Unknown"}</td>
                   <td className="px-4 py-3 text-right">
                     <Button
                       size="sm"
