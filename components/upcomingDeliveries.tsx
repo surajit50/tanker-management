@@ -26,17 +26,11 @@ export function UpcomingDeliveries() {
     const fetchUpcomingDeliveries = async () => {
       try {
         const response = await fetch("/api/deliveries/upcoming");
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch upcoming deliveries");
-        }
-
+        if (!response.ok) throw new Error("Failed to fetch upcoming deliveries");
         const data = await response.json();
         setUpcomingDeliveries(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch upcoming deliveries"
-        );
+        setError(err instanceof Error ? err.message : "Failed to fetch deliveries");
       } finally {
         setLoading(false);
       }
@@ -45,40 +39,51 @@ export function UpcomingDeliveries() {
     fetchUpcomingDeliveries();
   }, []);
 
-  // Helper function to group deliveries by date
   const groupDeliveriesByDate = (deliveries: Booking[]) => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
 
-    const groups = {
-      today: [] as Booking[],
-      tomorrow: [] as Booking[],
-      next7Days: [] as Booking[],
-    };
-
-    deliveries.forEach((delivery) => {
+    return deliveries.reduce((acc: { today: Booking[]; tomorrow: Booking[]; next7Days: Booking[] }, delivery) => {
       const deliveryDate = new Date(delivery.date);
-
       if (deliveryDate.toDateString() === today.toDateString()) {
-        groups.today.push(delivery);
+        acc.today.push(delivery);
       } else if (deliveryDate.toDateString() === tomorrow.toDateString()) {
-        groups.tomorrow.push(delivery);
-      } else if (deliveryDate > today && deliveryDate <= new Date(today.setDate(today.getDate() + 7))) {
-        groups.next7Days.push(delivery);
+        acc.tomorrow.push(delivery);
+      } else if (deliveryDate > today && deliveryDate <= nextWeek) {
+        acc.next7Days.push(delivery);
       }
-    });
-
-    return groups;
+      return acc;
+    }, { today: [], tomorrow: [], next7Days: [] });
   };
 
   const { today, tomorrow, next7Days } = groupDeliveriesByDate(upcomingDeliveries);
+  const allDeliveries = [
+    ...today.map(d => ({ ...d, group: "Today" as const })),
+    ...tomorrow.map(d => ({ ...d, group: "Tomorrow" as const })),
+    ...next7Days.map(d => ({ ...d, group: "Next 7 Days" as const })),
+  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const formatDate = (dateString: string, group: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = group === "Next 7 Days" 
+      ? { weekday: 'short', month: 'short', day: 'numeric' }
+      : { month: 'short', day: 'numeric' };
+    
+    const datePart = date.toLocaleDateString('en-US', options);
+    
+    if (group === "Today") return `Today, ${datePart}`;
+    if (group === "Tomorrow") return `Tomorrow, ${datePart}`;
+    return datePart;
+  };
 
   if (loading) {
     return (
       <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} className="h-24 w-full rounded-lg" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-[58px] w-full rounded-lg" />
         ))}
       </div>
     );
@@ -90,12 +95,7 @@ export function UpcomingDeliveries() {
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
           {error}
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-2"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant="outline" size="sm" className="ml-2" onClick={() => window.location.reload()}>
             Retry
           </Button>
         </AlertDescription>
@@ -103,7 +103,7 @@ export function UpcomingDeliveries() {
     );
   }
 
-  if (upcomingDeliveries.length === 0) {
+  if (allDeliveries.length === 0) {
     return (
       <div className="text-center text-gray-600 py-8">
         <CalendarIcon className="mx-auto h-8 w-8 mb-2" />
@@ -120,126 +120,49 @@ export function UpcomingDeliveries() {
           Upcoming Deliveries
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Today's Deliveries */}
-        {today.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full">
-                Today
-              </span>
-            </h3>
-            <ul className="space-y-3">
-              {today.map((delivery) => (
-                <li key={delivery.id}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {delivery.taker.name} ({delivery.taker.type})
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Scheduled for: {new Date(delivery.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-2"
-                        onClick={() => {
-                          // Handle delivery actions (e.g., mark as completed)
-                        }}
-                      >
-                        <CheckCircleIcon className="h-4 w-4" />
-                        Mark as Completed
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </li>
+      <CardContent>
+        <div className="rounded-md border">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Recipient</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Type</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {allDeliveries.map((delivery) => (
+                <tr key={delivery.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      {delivery.group === "Today" && (
+                        <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                      )}
+                      {delivery.group === "Tomorrow" && (
+                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                      )}
+                      {formatDate(delivery.date, delivery.group)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{delivery.taker.name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500">{delivery.taker.type}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => {/* Handle completion */}}
+                    >
+                      <CheckCircleIcon className="h-4 w-4" />
+                      Complete
+                    </Button>
+                  </td>
+                </tr>
               ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Tomorrow's Deliveries */}
-        {tomorrow.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                Tomorrow
-              </span>
-            </h3>
-            <ul className="space-y-3">
-              {tomorrow.map((delivery) => (
-                <li key={delivery.id}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {delivery.taker.name} ({delivery.taker.type})
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Scheduled for: {new Date(delivery.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-2"
-                        onClick={() => {
-                          // Handle delivery actions (e.g., mark as completed)
-                        }}
-                      >
-                        <CheckCircleIcon className="h-4 w-4" />
-                        Mark as Completed
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Next 7 Days' Deliveries */}
-        {next7Days.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
-                Next 7 Days
-              </span>
-            </h3>
-            <ul className="space-y-3">
-              {next7Days.map((delivery) => (
-                <li key={delivery.id}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {delivery.taker.name} ({delivery.taker.type})
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Scheduled for: {new Date(delivery.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-2"
-                        onClick={() => {
-                          // Handle delivery actions (e.g., mark as completed)
-                        }}
-                      >
-                        <CheckCircleIcon className="h-4 w-4" />
-                        Mark as Completed
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );
