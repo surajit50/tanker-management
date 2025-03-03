@@ -9,6 +9,9 @@ import { CalendarIcon, UserIcon, CheckCircleIcon } from "lucide-react";
 interface Booking {
   id: string;
   date: string;
+  bookingby: string;
+  deliveryAddress: string;
+  mobileNo: string;
   taker: {
     id: string;
     name: string;
@@ -25,11 +28,14 @@ export function UpcomingDeliveries() {
     const fetchUpcomingDeliveries = async () => {
       try {
         const response = await fetch("/api/deliveries/upcoming");
-        if (!response.ok) throw new Error("Failed to fetch upcoming deliveries");
+        if (!response.ok)
+          throw new Error("Failed to fetch upcoming deliveries");
         const data = await response.json();
         setUpcomingDeliveries(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch deliveries");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch deliveries"
+        );
       } finally {
         setLoading(false);
       }
@@ -54,35 +60,43 @@ export function UpcomingDeliveries() {
       );
     };
 
-    return deliveries.reduce((acc: { today: Booking[]; tomorrow: Booking[]; next7Days: Booking[] }, delivery) => {
-      const deliveryDate = new Date(delivery.date);
-      if (isSameDate(deliveryDate, today)) {
-        acc.today.push(delivery);
-      } else if (isSameDate(deliveryDate, tomorrow)) {
-        acc.tomorrow.push(delivery);
-      } else if (deliveryDate > today && deliveryDate <= nextWeek) {
-        acc.next7Days.push(delivery);
-      }
-      return acc;
-    }, { today: [], tomorrow: [], next7Days: [] });
+    return deliveries.reduce(
+      (
+        acc: { today: Booking[]; tomorrow: Booking[]; next7Days: Booking[] },
+        delivery
+      ) => {
+        const deliveryDate = new Date(delivery.date);
+        if (isSameDate(deliveryDate, today)) {
+          acc.today.push(delivery);
+        } else if (isSameDate(deliveryDate, tomorrow)) {
+          acc.tomorrow.push(delivery);
+        } else if (deliveryDate > today && deliveryDate <= nextWeek) {
+          acc.next7Days.push(delivery);
+        }
+        return acc;
+      },
+      { today: [], tomorrow: [], next7Days: [] }
+    );
   };
 
-  const { today, tomorrow, next7Days } = groupDeliveriesByDate(upcomingDeliveries);
+  const { today, tomorrow, next7Days } =
+    groupDeliveriesByDate(upcomingDeliveries);
 
   const allDeliveries = [
-    ...today.map(d => ({ ...d, group: "Today" as const })),
-    ...tomorrow.map(d => ({ ...d, group: "Tomorrow" as const })),
-    ...next7Days.map(d => ({ ...d, group: "Next 7 Days" as const })),
+    ...today.map((d) => ({ ...d, group: "Today" as const })),
+    ...tomorrow.map((d) => ({ ...d, group: "Tomorrow" as const })),
+    ...next7Days.map((d) => ({ ...d, group: "Next 7 Days" as const })),
   ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const formatDate = (dateString: string, group: string) => {
     const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = group === "Next 7 Days" 
-      ? { weekday: 'short', month: 'short', day: 'numeric' }
-      : { month: 'short', day: 'numeric' };
-    
-    const datePart = date.toLocaleDateString('en-US', options);
-    
+    const options: Intl.DateTimeFormatOptions =
+      group === "Next 7 Days"
+        ? { weekday: "short", month: "short", day: "numeric" }
+        : { month: "short", day: "numeric" };
+
+    const datePart = date.toLocaleDateString("en-US", options);
+
     if (group === "Today") return `Today, ${datePart}`;
     if (group === "Tomorrow") return `Tomorrow, ${datePart}`;
     return datePart;
@@ -104,7 +118,12 @@ export function UpcomingDeliveries() {
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
           {error}
-          <Button variant="outline" size="sm" className="ml-2" onClick={() => window.location.reload()}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-2"
+            onClick={() => window.location.reload()}
+          >
             Retry
           </Button>
         </AlertDescription>
@@ -134,14 +153,32 @@ export function UpcomingDeliveries() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Tanker Name</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                  Booking By
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                  Booker Mobile No
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                  Delivery Location
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                  Tanker Name
+                </th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {allDeliveries.map((delivery) => (
-                <tr key={delivery.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={delivery.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center gap-2">
                       {delivery.group === "Today" && (
@@ -154,6 +191,12 @@ export function UpcomingDeliveries() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    {delivery.bookingby}
+                  </td>
+                  <td>{delivery.mobileNo}</td>
+
+                  <td>{delivery.deliveryAddress}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {delivery.taker.name}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -161,7 +204,9 @@ export function UpcomingDeliveries() {
                       size="sm"
                       variant="outline"
                       className="gap-2"
-                      onClick={() => {/* Handle completion */}}
+                      onClick={() => {
+                        /* Handle completion */
+                      }}
                     >
                       <CheckCircleIcon className="h-4 w-4" />
                       Complete
