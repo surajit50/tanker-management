@@ -161,7 +161,7 @@ export function UpcomingDeliveries() {
       <div className="text-center p-8 bg-gray-50 rounded-lg">
         <CalendarIcon className="mx-auto h-12 w-12 mb-4 text-gray-400" />
         <h3 className="text-lg font-medium text-gray-900">No upcoming deliveries</h3>
-        <p className="mt-1 text-sm text-gray-500">All caught up! Check back later for new deliveries.</p>
+        <p className="mt-1 text-sm text-gray-500">All caught up Check back later for new deliveries.</p>
       </div>
     );
   }
@@ -179,7 +179,7 @@ export function UpcomingDeliveries() {
           <div className="space-y-3">
             <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
               <ClockIcon className="h-5 w-5" />
-              Today's Deliveries ({today.length})
+              Todays Deliveries ({today.length})
             </div>
             {today.map((delivery) => (
               <DeliveryCard 
@@ -196,7 +196,7 @@ export function UpcomingDeliveries() {
           <div className="space-y-3">
             <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
               <ClockIcon className="h-5 w-5" />
-              Tomorrow's Deliveries ({tomorrow.length})
+              Tomorrows Deliveries ({tomorrow.length})
             </div>
             {tomorrow.map((delivery) => (
               <DeliveryCard
