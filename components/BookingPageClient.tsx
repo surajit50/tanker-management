@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { AlertCircle, Loader2, RefreshCw, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw, Calendar, XCircle } from "lucide-react";
 import { BookingForm } from "./BookingForm";
 
 interface Taker {
@@ -20,11 +20,11 @@ interface Taker {
 
 export default function BookingPageClient() {
   const [availableTakers, setAvailableTakers] = useState<Taker[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date()); // Initialize with current date
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams(); // Get search params from the URL
+  const searchParams = useSearchParams();
 
   // Read the date from the search params and update selectedDate
   useEffect(() => {
@@ -38,12 +38,12 @@ export default function BookingPageClient() {
   }, [searchParams]);
 
   // Fetch available takers for the selected date
-  const fetchAvailableTakers = async () => {
+  const fetchAvailableTakers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const dateKey = selectedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      const dateKey = selectedDate.toISOString().split("T")[0];
       const response = await fetch(`/api/availability/takers?date=${dateKey}`);
 
       if (!response.ok) {
@@ -61,16 +61,16 @@ export default function BookingPageClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
 
   useEffect(() => {
     fetchAvailableTakers();
-  }, [selectedDate]);
+  }, [fetchAvailableTakers]);
 
   // Handle date change
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value); // Parse the date from the input
-    if (isNaN(newDate.getTime())) return; // Validate the date
+    const newDate = new Date(e.target.value);
+    if (isNaN(newDate.getTime())) return;
 
     setSelectedDate(newDate);
 
@@ -119,9 +119,9 @@ export default function BookingPageClient() {
               <Input
                 type="date"
                 id="date"
-                value={selectedDate.toISOString().split("T")[0]} // Format as YYYY-MM-DD
-                min={new Date().toISOString().split("T")[0]} // Set min date to today
-                onChange={handleDateChange} // Handle date change
+                value={selectedDate.toISOString().split("T")[0]}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={handleDateChange}
                 className="flex-1"
               />
               <Button
