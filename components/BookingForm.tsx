@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input"; // Import Input component
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -39,6 +40,8 @@ export function BookingForm({
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0); // Progress state
   const [selectedTakerId, setSelectedTakerId] = useState<string>("");
+  const [mobileNo, setMobileNo] = useState<string>(""); // State for mobile number
+  const [deliveryAddress, setDeliveryAddress] = useState<string>(""); // State for delivery address
   const [localTakers, setLocalTakers] = useState<Taker[]>(allTakers);
   const router = useRouter();
 
@@ -50,9 +53,11 @@ export function BookingForm({
   // Reset form when selectedDate changes
   useEffect(() => {
     setSelectedTakerId("");
+    setMobileNo("");
+    setDeliveryAddress("");
     setSuccess(false);
     setError(null);
-  }, []); // Removed selectedDate from dependencies
+  }, [selectedDate]); // Reset form when selectedDate changes
 
   const refreshData = useCallback(() => {
     router.refresh();
@@ -68,6 +73,8 @@ export function BookingForm({
 
     const formData = new FormData(event.currentTarget);
     formData.append("date", selectedDate.toISOString());
+    formData.append("mobileNo", mobileNo); // Add mobile number to form data
+    formData.append("deliveryAddress", deliveryAddress); // Add delivery address to form data
 
     try {
       // Simulate progress (for demonstration purposes)
@@ -79,6 +86,8 @@ export function BookingForm({
       setProgress(100); // Complete progress
       setSuccess(true);
       setSelectedTakerId("");
+      setMobileNo("");
+      setDeliveryAddress("");
 
       // Update local state immediately
       setLocalTakers((prevTakers) =>
@@ -132,6 +141,40 @@ export function BookingForm({
         </Select>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="mobileNo" className="text-lg font-semibold">
+          Mobile Number
+        </Label>
+        <Input
+          id="mobileNo"
+          name="mobileNo"
+          type="tel"
+          placeholder="Enter mobile number"
+          value={mobileNo}
+          onChange={(e) => setMobileNo(e.target.value)}
+          required
+          disabled={loading}
+          className="w-full py-3"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="deliveryAddress" className="text-lg font-semibold">
+          Delivery Address
+        </Label>
+        <Input
+          id="deliveryAddress"
+          name="deliveryAddress"
+          type="text"
+          placeholder="Enter delivery address"
+          value={deliveryAddress}
+          onChange={(e) => setDeliveryAddress(e.target.value)}
+          required
+          disabled={loading}
+          className="w-full py-3"
+        />
+      </div>
+
       {error && (
         <Alert variant="destructive" className="border-red-500">
           <AlertCircle className="h-4 w-4" />
@@ -148,7 +191,7 @@ export function BookingForm({
 
       <Button
         type="submit"
-        disabled={loading || !selectedTakerId}
+        disabled={loading || !selectedTakerId || !mobileNo || !deliveryAddress}
         className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300 relative overflow-hidden"
       >
         <div
