@@ -27,10 +27,12 @@ model Taker {
 }
 
 model Booking {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  date    DateTime
-  taker   Taker    @relation(fields: [takerId], references: [id])
-  takerId String   @db.ObjectId
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  date           DateTime
+  taker          Taker    @relation(fields: [takerId], references: [id])
+  takerId        String   @db.ObjectId
+  mobileNo       String   // Add mobile number field
+  deliveryAddress String  // Add delivery address field
 
   @@map("bookings")
 }
