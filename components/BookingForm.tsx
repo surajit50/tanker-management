@@ -1,7 +1,8 @@
+
 "use client";
 
 import type React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { bookTanker } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +17,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 interface Taker {
   id: string;
@@ -30,6 +35,13 @@ interface BookingFormProps {
   onBookingSuccess: () => void; // Trigger parent component refresh
 }
 
+const formSchema = z.object({
+  takerId: z.string().min(1, "Please select a taker"),
+  deliveryAddress: z.string().min(1, "Delivery address is required"),
+  mobileNo: z.string().min(10, "Mobile number must be at least 10 digits"),
+  bookingBy: z.string().optional(),
+});
+
 export function BookingForm({
   allTakers,
   selectedDate,
@@ -39,12 +51,18 @@ export function BookingForm({
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [selectedTakerId, setSelectedTakerId] = useState<string>("");
-  const [mobileNo, setMobileNo] = useState<string>("");
-  const [bookingBy, setBookingBy] = useState<string>("");
-  const [deliveryAddress, setDeliveryAddress] = useState<string>("");
   const [localTakers, setLocalTakers] = useState<Taker[]>(allTakers);
   const router = useRouter();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      takerId: "",
+      deliveryAddress: "",
+      mobileNo: "",
+      bookingBy: "",
+    },
+  });
 
   // Update localTakers when allTakers changes
   useEffect(() => {
@@ -53,31 +71,28 @@ export function BookingForm({
 
   // Reset form when selectedDate changes
   useEffect(() => {
-    setSelectedTakerId("");
-    setMobileNo("");
-    setDeliveryAddress("");
-    setBookingBy("");
+    form.reset();
     setSuccess(false);
     setError(null);
-  }, [selectedDate]); //Corrected dependency array
+  }, [selectedDate]);
 
-  const refreshData = useCallback(() => {
+  const refreshData = () => {
     router.refresh();
     onBookingSuccess(); // Trigger parent component refresh
-  }, [router, onBookingSuccess]);
+  };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setError(null);
     setSuccess(false);
     setLoading(true);
     setProgress(0); // Reset progress
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData();
+    formData.append("takerId", values.takerId);
+    formData.append("deliveryAddress", values.deliveryAddress);
+    formData.append("mobileNo", values.mobileNo);
+    if (values.bookingBy) formData.append("bookingBy", values.bookingBy);
     formData.append("date", selectedDate.toISOString());
-    formData.append("mobileNo", mobileNo);
-    formData.append("deliveryAddress", deliveryAddress);
-    if (bookingBy) formData.append("bookingBy", bookingBy);
 
     try {
       // Simulate progress
@@ -88,15 +103,11 @@ export function BookingForm({
       await bookTanker(formData);
       setProgress(100); // Complete progress
       setSuccess(true);
-      setSelectedTakerId("");
-      setMobileNo("");
-      setDeliveryAddress("");
-      setBookingBy("");
 
       // Update local state immediately
       setLocalTakers((prevTakers) =>
         prevTakers.map((taker) =>
-          taker.id === selectedTakerId ? { ...taker, status: "BOOKED" } : taker
+          taker.id === values.takerId ? { ...taker, status: "BOOKED" } : taker
         )
       );
 
@@ -116,125 +127,139 @@ export function BookingForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="takerId" className="text-lg font-semibold">
-          Select Taker
-        </Label>
-        <Select
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
           name="takerId"
-          required
-          disabled={loading}
-          value={selectedTakerId}
-          onValueChange={setSelectedTakerId}
-        >
-          <SelectTrigger id="takerId" className="w-full py-3">
-            <SelectValue placeholder="Choose a taker" />
-          </SelectTrigger>
-          <SelectContent className="bg-white shadow-lg rounded-lg">
-            {availableTakers.length > 0 ? (
-              availableTakers.map((taker) => (
-                <SelectItem
-                  key={taker.id}
-                  value={taker.id}
-                  className="hover:bg-gray-100 cursor-pointer"
-                >
-                  {taker.name} ({taker.type})
-                </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="none" disabled>
-                No available takers
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="deliveryAddress" className="text-lg font-semibold">
-          Delivery Address
-        </Label>
-        <Input
-          id="deliveryAddress"
-          name="deliveryAddress"
-          type="text"
-          placeholder="Enter delivery address"
-          value={deliveryAddress}
-          onChange={(e) => setDeliveryAddress(e.target.value)}
-          required
-          disabled={loading}
-          className="w-full py-3"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="mobileNo" className="text-lg font-semibold">
-          Mobile Number
-        </Label>
-        <Input
-          id="mobileNo"
-          name="mobileNo"
-          type="tel"
-          placeholder="Enter mobile number"
-          value={mobileNo}
-          onChange={(e) => setMobileNo(e.target.value)}
-          required
-          disabled={loading}
-          className="w-full py-3"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="bookingBy" className="text-lg font-semibold">
-          Booking By (Optional)
-        </Label>
-        <Input
-          id="bookingBy"
-          name="bookingBy"
-          type="text"
-          placeholder="Enter name of person booking"
-          value={bookingBy}
-          onChange={(e) => setBookingBy(e.target.value)}
-          disabled={loading}
-          className="w-full py-3"
-        />
-      </div>
-
-      {error && (
-        <Alert variant="destructive" className="border-red-500">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {success && (
-        <Alert className="border-green-500">
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>Booking successful!</AlertDescription>
-        </Alert>
-      )}
-
-      <Button
-        type="submit"
-        disabled={loading || !selectedTakerId || !mobileNo || !deliveryAddress}
-        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300 relative overflow-hidden"
-      >
-        <div
-          className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
-        <span className="relative z-10 flex items-center justify-center">
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Booking... ({progress}%)
-            </>
-          ) : (
-            "Book Now"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold">Select Taker</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={loading}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full py-3">
+                    <SelectValue placeholder="Choose a taker" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-white shadow-lg rounded-lg">
+                  {availableTakers.length > 0 ? (
+                    availableTakers.map((taker) => (
+                      <SelectItem
+                        key={taker.id}
+                        value={taker.id}
+                        className="hover:bg-gray-100 cursor-pointer"
+                      >
+                        {taker.name} ({taker.type})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      No available takers
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
           )}
-        </span>
-      </Button>
-    </form>
+        />
+
+        <FormField
+          control={form.control}
+          name="deliveryAddress"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold">Delivery Address</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Enter delivery address"
+                  disabled={loading}
+                  className="w-full py-3"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="mobileNo"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold">Mobile Number</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Enter mobile number"
+                  disabled={loading}
+                  className="w-full py-3"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="bookingBy"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold">Booking By (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="Enter name of person booking"
+                  disabled={loading}
+                  className="w-full py-3"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {error && (
+          <Alert variant="destructive" className="border-red-500">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {success && (
+          <Alert className="border-green-500">
+            <CheckCircle className="h-4 w-4" />
+            <AlertDescription>Booking successful!</AlertDescription>
+          </Alert>
+        )}
+
+        <Button
+          type="submit"
+          disabled={loading || !form.formState.isValid}
+          className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300 relative overflow-hidden"
+        >
+          <div
+            className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+          <span className="relative z-10 flex items-center justify-center">
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Booking... ({progress}%)
+              </>
+            ) : (
+              "Book Now"
+            )}
+          </span>
+        </Button>
+      </form>
+    </Form>
   );
 }
