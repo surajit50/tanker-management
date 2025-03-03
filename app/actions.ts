@@ -4,7 +4,7 @@ import { parseISTDate } from "@/lib/dateUtils";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
-export async function bookTanker(formData: FormData) {
+ export async function bookTanker(formData: FormData) {
   const takerId = formData.get("takerId") as string | null; // takerId is now optional
   const date = parseISTDate(formData.get("date") as string);
   const mobileNo = formData.get("mobileNo") as string; // Add mobile number
@@ -38,7 +38,7 @@ export async function bookTanker(formData: FormData) {
   // Create the booking
   await prisma.booking.create({
     data: {
-      takerId: takerId, // Set takerId to null if not provided
+      takerId: takerId || undefined, // Convert null to undefined
       date,
       mobileNo, // Include mobile number
       deliveryAddress, // Include delivery address
