@@ -2,7 +2,7 @@
 "use client";
 
 import { Suspense } from "react";
-import BookingPageClient from "@/components/BookingPageClient";
+import {ClientForm }from "@/components/BookingPageClient";
 
 export default function BookingPage() {
   return (
